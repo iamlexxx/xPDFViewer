@@ -1,0 +1,98 @@
+# ==============================================================================
+# Built Binaries & Build Outputs
+# ==============================================================================
+build/
+**/build/
+bin/
+out/
+
+# APK & AAB Packages
+*.apk
+*.ap_
+*.aab
+
+# ==============================================================================
+# Gradle & Kotlin Compiler Caches
+# ==============================================================================
+.gradle/
+**/.gradle/
+.kotlin/
+**/.kotlin/
+gradle-app.setting
+.gradletasknamecache
+
+# Preserve Gradle Wrapper Jar
+!gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# ==============================================================================
+# Android SDK & Local Machine Configurations
+# ==============================================================================
+local.properties
+**/local.properties
+captures/
+**/captures/
+.navigation/
+output.json
+output-metadata.json
+
+# Profiling & Diagnostics
+*.hprof
+*.log
+
+# ==============================================================================
+# Android Studio / IntelliJ IDEA
+# ==============================================================================
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+.idea_modules/
+
+# VS Code & Other Editors
+.vscode/
+**/.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# ==============================================================================
+# Native (NDK / C++) Build Artifacts
+# ==============================================================================
+.cxx/
+**/.cxx/
+.externalNativeBuild/
+**/.externalNativeBuild/
+default.properties
+
+# ==============================================================================
+# Signing Keys & Certificates (Security)
+# ==============================================================================
+*.jks
+*.keystore
+*.p12
+*.key
+*.pepk
+*.p8
+google-services.json
+
+# ==============================================================================
+# OS-Specific Files
+# ==============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*

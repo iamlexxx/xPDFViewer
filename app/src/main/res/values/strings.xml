@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">xPDFViewer</string>
+    <string name="open_pdf">Open PDF</string>
+    <string name="no_pdf_loaded">No PDF document loaded</string>
+    <string name="select_pdf_instruction">Tap below to choose a PDF file from your device</string>
+    <string name="jump_to_page">Jump to Page</string>
+    <string name="page_number">Page Number</string>
+    <string name="go">Go</string>
+    <string name="cancel">Cancel</string>
+    <string name="dark_mode">Invert / Dark Mode</string>
+    <string name="keep_screen_on">Keep Screen Awake</string>
+    <string name="zoom_reset">Reset Zoom</string>
+    <string name="loading_pdf">Loading PDF…</string>
+    <string name="error_loading_pdf">Failed to load PDF file</string>
+</resources>

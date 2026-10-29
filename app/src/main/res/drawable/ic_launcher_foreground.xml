@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Document outline -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M32,24 C30.89,24 30,24.89 30,26 L30,82 C30,83.11 30.89,84 32,84 L76,84 C77.11,84 78,83.11 78,82 L78,40 L62,24 L32,24 Z" />
+    <!-- Folded corner -->
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M62,24 L78,40 L62,40 Z" />
+    <!-- PDF Text badge -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,54 L44,54 C46,54 47,55 47,57 C47,59 46,60 44,60 L42,60 L42,65 L40,65 L40,54 Z M42,56 L42,58 L44,58 C45,58 45.5,57.5 45.5,57 C45.5,56.5 45,56 44,56 L42,56 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M49,54 L53,54 C55.5,54 57,56 57,59.5 C57,63 55.5,65 53,65 L49,65 L49,54 Z M51,56 L51,63 L53,63 C54.5,63 55.3,61.8 55.3,59.5 C55.3,57.2 54.5,56 53,56 L51,56 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M59,54 L67,54 L67,56 L61,56 L61,58.5 L66,58.5 L66,60.5 L61,60.5 L61,65 L59,65 L59,54 Z" />
+</vector>
