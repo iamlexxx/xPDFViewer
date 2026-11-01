@@ -1,17 +1,17 @@
 # Graph Report - xPDFViewer  (2026-11-01)
 
 ## Corpus Check
-- 260 files · ~333,726 words
+- 261 files · ~334,338 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 71 file(s) not represented in the graph (top: .csv 53, .xml 9, (none) 3)
 
 ## Summary
-- 4433 nodes · 9183 edges · 229 communities (187 shown, 42 thin omitted)
+- 4442 nodes · 9233 edges · 243 communities (190 shown, 53 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 229 edges (avg confidence: 0.89)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3bc158ea`
+- Built from commit: `00e5e18f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,6 +19,7 @@
 - PdfRedactionViewModel
 - ShadcnInstaller
 - scripts/core.py
+- DocumentOutlineSheet.kt
 - design_system.py
 - Context
 - gray
@@ -26,10 +27,10 @@
 - xPDF Viewer — Features & Architecture Documentation
 - PdfViewerViewModel
 - validate_data.py
-- test_native_desktop_stack_freshness.py
+- SignPdfViewModel.kt
 - slide_search_core.py
 - Tailwind CSS Utility Reference
-- fetch-background.py
+- json
 - Python Performance Optimization
 - Async Python Patterns Implementation Playbook
 - Brand Guidelines v1.0
@@ -100,7 +101,7 @@
 - Copywriting Formulas
 - Instructions
 - Copywriting Formulas
-- MainAppContainer
+- onRangeStart
 - CatalogRefreshTest
 - PdfSecurityViewModel
 - Banner Design - Multi-Format Creative Banner System
@@ -116,7 +117,6 @@
 - PdfPrintAdapter.kt
 - TestWebStackFreshness
 - SignaturePadDialog
-- CustomDocumentScannerScreen.kt
 - Logo Design Reference
 - Token Architecture
 - design-tokens-starter.json
@@ -144,7 +144,7 @@
 - Slide Strategies
 - Component Tokens
 - generate-tokens.cjs
-- PageOrganizerScreen.kt
+- PageOrganizerScreen
 - duration
 - Slide Strategies
 - OcrScannerViewModel.kt
@@ -153,9 +153,9 @@
 - Error Tracking and Monitoring
 - Error Analysis and Resolution
 - Error Tracking and Monitoring
-- PdfWatermarkViewModel.kt
+- ImagePdfConverterViewModel.kt
 - button
-- 2. Multi-Function Long-Press Menu
+- RedactionUiState
 - AudioPlaybackService
 - TailwindConfigGenerator
 - 19. Split PDF Utility
@@ -171,7 +171,7 @@
 - ImagePdfConverterScreen
 - Python Performance Optimization
 - Slides
-- RedactionUiState
+- OcrScannerEngine.kt
 - AudioTextNormalizer
 - 1. Core PDF Reader
 - input
@@ -187,19 +187,20 @@
 - PdfViewerScreen
 - ZoomableBox.kt
 - BM25
-- 8. PDF Compression Utility
+- render-html.py
 - padding-y
 - none
 - .queryFileSize
-- PdfSecurityViewModel.kt
-- CompressPdfScreen
+- test_style_taxonomy.py
+- test_native_desktop_stack_freshness.py
 - PdfRedactionScreen
 - 4. Page Management (Insert, Extract & Delete Pages)
 - slides-create.md
 - create.md
 - CLAUDE.md
+- ImageToPdfEngine.kt
 - GEMINI.md
-- logo/search.py
+- CropDragHandle
 - 20. Interactive Form Field Filler (AcroForm) & PDF Flattening Engine
 - PdfSecurityScreen
 - 16
@@ -209,7 +210,7 @@
 - 8
 - 22. PDF Watermark & Dynamic Pagination Utility
 - destructive
-- MergePdfScreen
+- PdfSearchHighlightCanvas.kt
 - destructive-foreground
 - muted
 - AudioReaderUiState
@@ -217,20 +218,32 @@
 - ring
 - secondary-foreground
 - AudioSpeed
-- 10. E-Signature & Secure Contract Signing
+- CompressPdfScreen
 - ScannedPdfCreator.kt
-- 9. Create PDF Speed Dial & Document Scanner
-- WelcomeScreen
+- DiscardChangesDialog
+- MainAppContainer
 - 6. On-Device OCR Scanner
-- PdfToImageEngine.kt
+- OutlineNode
+- PdfWatermarkScreen
 - 13. Standalone PDF Lock & Unlock Tool
-- FloatingTextToolbar.kt
+- SignPdfScreen
+- BitmapLruCache
 - 5. Save Mode System ("Overwrite" vs "Save As Copy")
-- CropDocumentStudioView
+- PageActionsBottomSheet
+- DocumentImageProcessor.kt
+- CreatePdfSpeedDial
+- ToolGridCard
+- AppBottomNav
 - CustomDocumentScannerScreen
+- logo/search.py
+- TestBm25CoreBehavior
+- 14. Document Outline (Table of Contents) & User Bookmarks
 - ImageToPdfEngine.kt
+- 15. In-Document Full-Text Search Engine
 - 16. Night Reading & Eye Comfort Modes
-- 23. Bidirectional Image-PDF Conversion Studio
+- OnImageCapturedCallback
+- SignSuccessDialog
+- WatermarkSuccessDialog
 
 ## God Nodes (most connected - your core abstractions)
 1. `PdfViewerViewModel` - 113 edges
@@ -242,24 +255,24 @@
 7. `ShadcnInstaller` - 34 edges
 8. `PdfRendererCore` - 34 edges
 9. `PageOrganizerViewModel` - 33 edges
-10. `PdfViewerScreen()` - 29 edges
+10. `PdfViewerScreen()` - 30 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `4.2 Spatial Hit-Testing Engine` --references--> `AudioSentence`  [INFERRED]
   SPEECH_ENHANCEMENT.md → app/src/main/java/com/xpdfviewer/data/AudioReaderModels.kt
+- `Capabilities` --references--> `OutlineNode`  [INFERRED]
+  FEATURES.md → app/src/main/java/com/xpdfviewer/data/PdfOutlineModels.kt
 - `5.2 Voice Profile & Pitch Architecture` --references--> `RecentDocumentsRepository`  [INFERRED]
   SPEECH_ENHANCEMENT.md → app/src/main/java/com/xpdfviewer/data/RecentDocumentsRepository.kt
 - `Added` --references--> `NormalizedRect`  [INFERRED]
   CHANGELOG.md → app/src/main/java/com/xpdfviewer/data/SpatialTextModels.kt
 - `Architecture & Capabilities` --references--> `NormalizedRect`  [INFERRED]
   FEATURES.md → app/src/main/java/com/xpdfviewer/data/SpatialTextModels.kt
-- `Capabilities` --references--> `NormalizedRect`  [INFERRED]
-  FEATURES.md → app/src/main/java/com/xpdfviewer/data/SpatialTextModels.kt
 
 ## Import Cycles
 - None detected.
 
-## Communities (229 total, 42 thin omitted)
+## Communities (243 total, 53 thin omitted)
 
 ### Community 1 - "ShadcnInstaller"
 Cohesion: 0.05
@@ -271,7 +284,7 @@ Nodes (31): BM25, _contains_phrase(), detect_domain(), _domain_keywords(), _exac
 
 ### Community 4 - "design_system.py"
 Cohesion: 0.04
-Nodes (19): ansi_ljust(), _detect_page_type(), format_ascii_box(), format_markdown(), format_master_md(), format_page_override_md(), generate_design_system(), _generate_intelligent_overrides() (+11 more)
+Nodes (25): ansi_ljust(), _detect_page_type(), format_ascii_box(), format_markdown(), format_master_md(), format_page_override_md(), generate_design_system(), _generate_intelligent_overrides() (+17 more)
 
 ### Community 6 - "gray"
 Cohesion: 0.05
@@ -282,8 +295,8 @@ Cohesion: 0.11
 Nodes (8): CompressResult, PdfCompressionLevel, EXTREME, LESS, RECOMMENDED, PdfCompressor, CompressPdfUiState, CompressPdfViewModel
 
 ### Community 8 - "xPDF Viewer — Features & Architecture Documentation"
-Cohesion: 0.14
-Nodes (13): 11. PDF Utilities Motion & Transition Architecture, 15. In-Document Full-Text Search Engine, 17. System Architecture & Permissions, 18. Feature Matrix & File Map, Capabilities, Key Classes, Key Motion Specs & Implementation, Overview (+5 more)
+Cohesion: 0.11
+Nodes (18): 11. PDF Utilities Motion & Transition Architecture, 17. System Architecture & Permissions, 18. Feature Matrix & File Map, 23. Bidirectional Image-PDF Conversion Studio, 8. PDF Compression Utility, Capabilities, Key Classes, Key Files (+10 more)
 
 ### Community 9 - "PdfViewerViewModel"
 Cohesion: 0.05
@@ -293,9 +306,9 @@ Nodes (3): AddBookmarkDialogState, TextSelectionBottomSheet(), PdfViewerViewMode
 Cohesion: 0.06
 Nodes (44): read_rows(), TestAccessibilityGuidance, TestChartsTypographyAndIcons, TestCurrentReactGuidance, TestSemanticColors, TestGeneratedCatalogContract, _catalog_date(), _check_app_interface_contract() (+36 more)
 
-### Community 11 - "test_native_desktop_stack_freshness.py"
-Cohesion: 0.11
-Nodes (3): TestFixtureValidation, TestMetricMath, TestThresholdGate
+### Community 11 - "SignPdfViewModel.kt"
+Cohesion: 0.15
+Nodes (6): PageDimensions, PdfSignerEngine, SignaturePenColor, SignatureStamp, SignResult, SignPdfUiState
 
 ### Community 12 - "slide_search_core.py"
 Cohesion: 0.08
@@ -305,9 +318,9 @@ Nodes (17): format_context(), format_result(), main(), BM25, calculate_pattern_b
 Cohesion: 0.05
 Nodes (43): Arbitrary Values, Aspect Ratio, Background Colors, Border Color, Border Radius, Border Style, Border Width, Borders (+35 more)
 
-### Community 14 - "fetch-background.py"
-Cohesion: 0.06
-Nodes (14): generate_css_for_background(), get_background_image(), get_curated_images(), get_overlay_css(), get_pexels_search_url(), load_backgrounds_config(), load_brand_colors(), main() (+6 more)
+### Community 14 - "json"
+Cohesion: 0.16
+Nodes (9): generate_css_for_background(), get_background_image(), get_curated_images(), get_overlay_css(), get_pexels_search_url(), load_backgrounds_config(), load_brand_colors(), main() (+1 more)
 
 ### Community 15 - "Python Performance Optimization"
 Cohesion: 0.05
@@ -338,8 +351,8 @@ Cohesion: 0.06
 Nodes (35): 1. Visual Communication First, 2. Minimal Text Integration, 3. Expert Craftsmanship, 4. Systematic Patterns, Analog Meditation, Approach, Canvas Boundaries, Canvas Design System (+27 more)
 
 ### Community 22 - "PdfWatermarkEngine.kt"
-Cohesion: 0.06
-Nodes (38): PaginationAnchor, BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT, TOP_CENTER, TOP_LEFT, TOP_RIGHT, PaginationConfig (+30 more)
+Cohesion: 0.07
+Nodes (31): PaginationConfig, PaginationFormat, BATES, DASHES, PAGE_OF_TOTAL, PAGE_ONLY, PAGE_PREFIX, WatermarkColor (+23 more)
 
 ### Community 24 - "Prerequisites"
 Cohesion: 0.06
@@ -351,15 +364,15 @@ Nodes (8): SplitMode, BURST_PAGES, CUSTOM_RANGE, FIXED_INTERVAL, SplitPdfUiState
 
 ### Community 26 - "json"
 Cohesion: 0.07
-Nodes (17): test_sync_parses_bundled_starter_template(), build_cip_prompt(), check_logo_required(), generate_cip_set(), generate_with_nano_banana(), load_env(), load_logo_image(), main() (+9 more)
+Nodes (16): test_sync_parses_bundled_starter_template(), build_cip_prompt(), check_logo_required(), generate_cip_set(), generate_with_nano_banana(), load_env(), load_logo_image(), main() (+8 more)
 
 ### Community 28 - "DesignSystemGenerator"
-Cohesion: 0.06
-Nodes (12): DesignSystemGenerator, apply_decision_rules(), _object_without_duplicates(), parse_decision_rules(), _validate_action(), TestReasoningMatch, read_rows(), split_values() (+4 more)
+Cohesion: 0.09
+Nodes (5): DesignSystemGenerator, TestReasoningMatch, read_rows(), TestLandingAndStackContract, TestReasoningContract
 
 ### Community 29 - "re"
-Cohesion: 0.07
-Nodes (17): generate_html(), get_deliverable_info(), get_image_base64(), main(), apply_color(), apply_viewbox_size(), extract_svgs(), generate_batch() (+9 more)
+Cohesion: 0.11
+Nodes (13): apply_color(), apply_viewbox_size(), extract_svgs(), generate_batch(), generate_icon(), generate_sizes(), load_env(), main() (+5 more)
 
 ### Community 30 - "Form & Input Components"
 Cohesion: 0.06
@@ -395,11 +408,7 @@ Nodes (28): Accordion, Alert, ARIA Labels, Checkbox and Radio, Color Contrast, C
 
 ### Community 38 - "ContinuousAudioReader"
 Cohesion: 0.11
-Nodes (5): ContinuousAudioReader, onDone(), onError(), onStart(), onStop()
-
-### Community 39 - "PdfDocumentModifier"
-Cohesion: 0.22
-Nodes (3): PageTransformSpec, PdfDocumentModifier, PdfTextExtractor
+Nodes (6): AudioPageContent, ContinuousAudioReader, onDone(), onError(), onStart(), onStop()
 
 ### Community 40 - "Asset Approval Checklist"
 Cohesion: 0.08
@@ -410,7 +419,7 @@ Cohesion: 0.08
 Nodes (25): Common Pitfalls, Core Prompt Structure, Detailed Brief, Eco/Sustainable, Effective Keywords by Style, Fashion Brand, Healthcare, Industry-Specific Prompts (+17 more)
 
 ### Community 43 - "MergePdfViewModel"
-Cohesion: 0.19
+Cohesion: 0.21
 Nodes (3): MergeDocumentItem, MergePdfUiState, MergePdfViewModel
 
 ### Community 44 - "Color Palette Management"
@@ -437,13 +446,9 @@ Nodes (3): PageItemState, PageOrganizerUiState, PageOrganizerViewModel
 Cohesion: 0.08
 Nodes (23): Art Direction Styles (Reuse from Banner), Color & Contrast, Design Best Practices, HTML Design Rules, HTML Template Structure, Option A: Chrome Headless CLI (Recommended — zero dependencies), Option B: chrome-devtools skill, Option C: Playwright script (+15 more)
 
-### Community 50 - "SignPdfViewModel"
-Cohesion: 0.06
-Nodes (16): PdfSignerEngine, SignaturePenColor, SignatureStamp, SignResult, SignatureStorageManager, sharePdf(), SignSuccessDialog(), FeatureCheckRow() (+8 more)
-
 ### Community 51 - "PdfRendererCore"
-Cohesion: 0.13
-Nodes (9): PageDimensions, PdfRendererCore, 10. Unified Tools Discard Architecture (`DiscardChangesDialog.kt`), 12. Visual Page Organizer & Grid Reordering Studio, Capabilities, Key Capabilities, Key Classes, Overview (+1 more)
+Cohesion: 0.14
+Nodes (8): PdfRendererCore, 10. E-Signature & Secure Contract Signing, 10. Unified Tools Discard Architecture (`DiscardChangesDialog.kt`), Capabilities, Key Capabilities, Key Classes, Overview, Overview
 
 ### Community 52 - "Design System"
 Cohesion: 0.09
@@ -471,11 +476,11 @@ Nodes (21): Accessibility Visual Verification, Advanced Validation Techniques, A
 
 ### Community 58 - "generate-slide.py"
 Cohesion: 0.13
-Nodes (10): _e(), generate_chart_slide(), generate_cta_slide(), generate_deck(), generate_metrics_slide(), generate_problem_slide(), generate_solution_slide(), generate_testimonial_slide() (+2 more)
+Nodes (11): _e(), generate_chart_slide(), generate_cta_slide(), generate_deck(), generate_metrics_slide(), generate_problem_slide(), generate_solution_slide(), generate_testimonial_slide() (+3 more)
 
 ### Community 59 - "cip/core.py"
-Cohesion: 0.10
-Nodes (11): detect_domain(), get_cip_brief(), _load_csv(), search(), search_all(), _search_csv(), detect_domain(), _load_csv() (+3 more)
+Cohesion: 0.07
+Nodes (14): detect_domain(), get_cip_brief(), _load_csv(), search(), search_all(), _search_csv(), detect_domain(), _load_csv() (+6 more)
 
 ### Community 61 - "Routing by Task Type"
 Cohesion: 0.10
@@ -486,8 +491,8 @@ Cohesion: 0.10
 Nodes (19): Base Color Presets, Best Practices, Color Customization, Color Format, Component Customization, CSS Variable System, Customize Styles, Customize Variants (+11 more)
 
 ### Community 64 - "RecentDocument"
-Cohesion: 0.23
-Nodes (6): RecentDocument, DocumentCard(), HomeScreen(), SwipeableRecentDocumentItem(), RecentScreen(), Added
+Cohesion: 0.19
+Nodes (9): RecentDocument, DocumentCard(), HomeScreen(), SwipeableRecentDocumentItem(), RecentScreen(), [1.2.0] - 2026-10-18, Added, Changed & Enhanced (+1 more)
 
 ### Community 65 - "Asset Organization Guide"
 Cohesion: 0.11
@@ -502,8 +507,8 @@ Cohesion: 0.11
 Nodes (18): 1. Wordmark (Logotype), 2. Lettermark (Monogram), 3. Pictorial Mark (Brand Mark), 4. Abstract Mark, 5. Mascot, 6. Emblem, 7. Combination Mark, Aesthetic Styles (+10 more)
 
 ### Community 68 - "PdfViewerScreen.kt"
-Cohesion: 0.07
-Nodes (4): DeletePageDialog(), FormActionsBar(), FormSaveChoiceDialog(), findActivity()
+Cohesion: 0.05
+Nodes (5): FloatingTextToolbar(), ToolbarActionItem(), FormActionsBar(), FormSaveChoiceDialog(), findActivity()
 
 ### Community 69 - "color"
 Cohesion: 0.11
@@ -546,8 +551,8 @@ Cohesion: 0.12
 Nodes (16): $type, $value, $type, $value, $type, $value, $type, $value (+8 more)
 
 ### Community 80 - "PdfViewerViewModel.kt"
-Cohesion: 0.08
-Nodes (16): AudioVoiceProfile, PdfSearchState, SearchMatch, PageModificationType, ADD_BLANK_PAGE, DELETE_PAGE, EXTRACT_PAGE, INSERT_PDF_DOCUMENT (+8 more)
+Cohesion: 0.07
+Nodes (17): OutlineTab, BOOKMARKS, CONTENTS, PdfSearchState, PageModificationType, ADD_BLANK_PAGE, DELETE_PAGE, EXTRACT_PAGE (+9 more)
 
 ### Community 81 - "extract-colors.cjs"
 Cohesion: 0.20
@@ -573,9 +578,13 @@ Nodes (14): 1. Error Tracking Analysis, 2. Error Tracking Service Integration, 3
 Cohesion: 0.13
 Nodes (14): AIDA (Attention-Interest-Desire-Action), Before-After-Bridge, Contrast Patterns, Copywriting Formulas, Core Formulas, Cost of Inaction, FAB (Features-Advantages-Benefits), Formula-to-Slide Mapping (+6 more)
 
-### Community 87 - "MainAppContainer"
-Cohesion: 0.05
-Nodes (16): MainActivity, AppBottomNav(), NavTabItem(), AppDrawerContent(), TelemetryRow(), CreatePdfSpeedDial(), SpeedDialItem(), WatermarkSuccessDialog() (+8 more)
+### Community 87 - "onRangeStart"
+Cohesion: 0.11
+Nodes (16): onRangeStart(), 24. Continuous Audio Reader (Document Audiobook Mode), Key Capabilities, Key Files, Overview, 1. Executive Summary & Capabilities, 2. Architecture & Data Flow Diagram, 4. Implementation Phases & Step-by-Step Milestones (+8 more)
+
+### Community 89 - "PdfSecurityViewModel"
+Cohesion: 0.10
+Nodes (4): SecurityToolMode, PROTECT, UNLOCK, PdfSecurityViewModel
 
 ### Community 90 - "Banner Design - Multi-Format Creative Banner System"
 Cohesion: 0.14
@@ -617,17 +626,9 @@ Nodes (13): Card Styles, Component Variants, CSS Structures, Feature Grid (3 col
 Cohesion: 0.15
 Nodes (12): Color Presets, Examples, Files Modified, Important, Overview, Skills Used, Step 1: Gather Brand Input, Step 2: Update Brand Guidelines (+4 more)
 
-### Community 101 - "TestWebStackFreshness"
-Cohesion: 0.08
-Nodes (4): _rows(), TestNativeDesktopStackFreshness, _rows(), TestWebStackFreshness
-
 ### Community 102 - "SignaturePadDialog"
 Cohesion: 0.28
 Nodes (4): SignatureBitmapHelper, Stroke, StrokePoint, SignaturePadDialog()
-
-### Community 103 - "CustomDocumentScannerScreen.kt"
-Cohesion: 0.04
-Nodes (13): ScanFilenamePromptDialog(), ScannedDocumentDialog(), CropDragHandle, BODY, BOTTOM_LEFT, BOTTOM_RIGHT, EDGE_BOTTOM, EDGE_LEFT (+5 more)
 
 ### Community 104 - "Logo Design Reference"
 Cohesion: 0.15
@@ -642,12 +643,12 @@ Cohesion: 0.15
 Nodes (12): component, $type, $value, dark, semantic, $schema, $type, $value (+4 more)
 
 ### Community 108 - "PdfPageItem"
-Cohesion: 0.12
-Nodes (5): PdfAudioHighlightCanvas(), PdfFormOverlayCanvas(), PdfPageItem(), PdfSearchHighlightCanvas(), PdfTextOverlayCanvas()
+Cohesion: 0.17
+Nodes (4): PdfAudioHighlightCanvas(), PdfFormOverlayCanvas(), PdfPageItem(), PdfTextOverlayCanvas()
 
-### Community 111 - "PdfOutlineExtractor.kt"
-Cohesion: 0.10
-Nodes (15): OutlineNode, OutlineTab, BOOKMARKS, CONTENTS, PdfOutlineExtractor, BookmarkCard(), BookmarksTabView(), ContentsTabView() (+7 more)
+### Community 112 - ".parsePageIndices"
+Cohesion: 0.28
+Nodes (5): WatermarkPageScope, ALL_PAGES, CUSTOM_RANGE, SKIP_FIRST, PdfWatermarkEngineTest
 
 ### Community 113 - "Primitive Tokens"
 Cohesion: 0.17
@@ -669,13 +670,13 @@ Nodes (12): $type, $value, bg, bg, padding, shadow, card, bg (+4 more)
 Cohesion: 0.17
 Nodes (11): 1. Error Tracking Analysis, 2. Error Tracking Service Integration, 3. Structured Logging Implementation, 4. Error Alerting Configuration, 5. Error Grouping and Deduplication, 6. Performance Impact Tracking, 7. Error Recovery Strategies, 8. Error Dashboard (+3 more)
 
-### Community 118 - "RecentDocumentsRepository"
-Cohesion: 0.15
-Nodes (3): UserBookmark, RecentDocumentsRepository, BitmapLruCache
-
 ### Community 119 - "test_design_system_mode.py"
 Cohesion: 0.07
 Nodes (14): _contrast_ratio(), _derive_dark_palette(), _filter_anti_patterns_for_mode(), _palette_is_dark(), _query_wants_dark(), _relative_luminance(), _resolve_color_mode(), _select_palette_for_mode() (+6 more)
+
+### Community 121 - "AudioPlayerDock.kt"
+Cohesion: 0.08
+Nodes (3): AudioPlayerDock(), FloatingNavIconButton(), FloatingViewerNavigationMenu()
 
 ### Community 122 - "Core Visual Elements"
 Cohesion: 0.18
@@ -690,8 +691,8 @@ Cohesion: 0.18
 Nodes (10): Bold Dynamic, CIP Design Style Guide, Classic Traditional, Color Psychology, Corporate Minimal, Fresh Modern, Luxury Premium, Modern Tech (+2 more)
 
 ### Community 125 - "NormalizedRect"
-Cohesion: 0.21
-Nodes (4): NormalizedRect, SpatialWord, AudioSentenceSegmenter, AudioSentenceSegmenterTest
+Cohesion: 0.18
+Nodes (7): AudioSentence, AudioWordToken, NormalizedRect, SpatialWord, AudioSentenceSegmenter, AudioSentenceSegmenterTest, 1.2 Implementation Mechanism
 
 ### Community 126 - "sync-brand-to-tokens.cjs"
 Cohesion: 0.29
@@ -713,9 +714,9 @@ Nodes (9): Alert Tokens, Badge Tokens, Button Tokens, Card Tokens, Component Tok
 Cohesion: 0.36
 Nodes (9): flattenTokens(), fs, generateCSS(), generateTailwind(), main(), parseArgs(), path, resolveReference() (+1 more)
 
-### Community 131 - "PageOrganizerScreen.kt"
-Cohesion: 0.09
-Nodes (5): OrganizerPageCard(), SaveChoiceDialog(), SaveOptionCard(), DiscardChangesDialog(), PageOrganizerScreen()
+### Community 131 - "PageOrganizerScreen"
+Cohesion: 0.17
+Nodes (7): SaveChoiceDialog(), SaveOptionCard(), PageOrganizerScreen(), 12. Visual Page Organizer & Grid Reordering Studio, Capabilities, Key Classes, Overview
 
 ### Community 132 - "duration"
 Cohesion: 0.20
@@ -724,10 +725,6 @@ Nodes (10): fast, normal, slow, $type, $value, $type, $value, duration (+2 more)
 ### Community 133 - "Slide Strategies"
 Cohesion: 0.20
 Nodes (9): Common Structures, Duarte Sparkline Pattern, Matching Strategy to Context, Product Demo (6 slides), Sales Pitch (9 slides), Search Commands, Slide Strategies, Strategy Selection (+1 more)
-
-### Community 136 - "OcrScannerViewModel.kt"
-Cohesion: 0.10
-Nodes (3): OcrScannerEngine, OcrScannerUiState, OcrScannerViewModel
 
 ### Community 137 - "ReadingMode"
 Cohesion: 0.14
@@ -749,25 +746,29 @@ Nodes (8): Context, Do not use this skill when, Error Analysis and Resolution, I
 Cohesion: 0.22
 Nodes (8): Context, Do not use this skill when, Error Tracking and Monitoring, Instructions, Output Format, Requirements, Resources, Use this skill when
 
-### Community 142 - "PdfWatermarkViewModel.kt"
-Cohesion: 0.18
-Nodes (4): WatermarkTab, PAGINATION, WATERMARK, PdfWatermarkViewModel
+### Community 142 - "ImagePdfConverterViewModel.kt"
+Cohesion: 0.15
+Nodes (4): ConverterMode, IMAGE_TO_PDF, PDF_TO_IMAGE, ImagePdfConverterViewModel
 
 ### Community 143 - "button"
 Cohesion: 0.20
 Nodes (10): fg, font-size, hover-bg, button, $type, $value, $type, $value (+2 more)
 
-### Community 144 - "2. Multi-Function Long-Press Menu"
-Cohesion: 0.50
-Nodes (4): 2. Multi-Function Long-Press Menu, Actions Available, Overview, User Flow
+### Community 144 - "RedactionUiState"
+Cohesion: 0.21
+Nodes (7): RedactionMark, RedactionResult, RedactionSource, KEYWORD_SEARCH, MANUAL_DRAG, RedactionUiState, PdfRedactionEngine
+
+### Community 145 - "AudioPlaybackService"
+Cohesion: 0.06
+Nodes (4): MainActivity, AudioPlaybackCommander, AudioPlaybackService, XPDFViewerTheme()
 
 ### Community 149 - "19. Split PDF Utility"
 Cohesion: 0.40
 Nodes (5): 19. Split PDF Utility, Key Files, Operating Modes, Overview, SAF Directory & File Streaming
 
 ### Community 150 - "Changelog"
-Cohesion: 0.11
-Nodes (17): [1.0.0] - Initial Release, [1.1.0] - 2026-10-18, [1.2.0] - 2026-10-18, [1.3.0] - 2026-11-01, [1.3.1] - 2026-11-01, [1.3.2] - 2026-11-01, [1.3.3] - 2026-11-01, [1.3.4] - 2026-11-01 (+9 more)
+Cohesion: 0.12
+Nodes (16): [1.0.0] - Initial Release, [1.1.0] - 2026-10-18, [1.3.0] - 2026-11-01, [1.3.1] - 2026-11-01, [1.3.2] - 2026-11-01, [1.3.3] - 2026-11-01, [1.3.4] - 2026-11-01, Added (+8 more)
 
 ### Community 151 - "Code Review Excellence"
 Cohesion: 0.29
@@ -809,12 +810,8 @@ Nodes (5): Do not use this skill when, Instructions, Python Performance Optimiza
 Cohesion: 0.33
 Nodes (5): References (Knowledge Base), Routing, Slides, Subcommands, When to Use
 
-### Community 163 - "RedactionUiState"
-Cohesion: 0.21
-Nodes (7): RedactionMark, RedactionResult, RedactionSource, KEYWORD_SEARCH, MANUAL_DRAG, RedactionUiState, PdfRedactionEngine
-
 ### Community 164 - "AudioTextNormalizer"
-Cohesion: 0.22
+Cohesion: 0.26
 Nodes (3): AudioTextNormalizer, ProcessedWord, AudioTextNormalizerTest
 
 ### Community 165 - "1. Core PDF Reader"
@@ -826,8 +823,8 @@ Cohesion: 0.29
 Nodes (8): padding-x, input, $type, $value, focus-ring, padding-x, $type, $value
 
 ### Community 167 - "3. Detailed Feature Specifications"
-Cohesion: 0.12
-Nodes (16): 1.1 Technical Problem, 1.2 Implementation Mechanism, 2.1 Technical Problem, 2.2 Normalization Pipeline (`AudioTextNormalizer.kt`), 3.1 Technical Problem, 3.2 Service Architecture (`AudioPlaybackService.kt`), 3. Detailed Feature Specifications, 4.1 Technical Problem (+8 more)
+Cohesion: 0.13
+Nodes (15): 1.1 Technical Problem, 2.1 Technical Problem, 2.2 Normalization Pipeline (`AudioTextNormalizer.kt`), 3.1 Technical Problem, 3.2 Service Architecture (`AudioPlaybackService.kt`), 3. Detailed Feature Specifications, 4.1 Technical Problem, 4.2 Spatial Hit-Testing Engine (+7 more)
 
 ### Community 168 - "SplitPdfScreen"
 Cohesion: 0.24
@@ -838,8 +835,8 @@ Cohesion: 0.60
 Nodes (5): sm, sm, sm, $type, $value
 
 ### Community 170 - "SpatialTextExtractor.kt"
-Cohesion: 0.13
-Nodes (10): PageSpatialData, PdfSearchEngine, WordSpan, SpatialTextExtractor, PDFTextStripper, Added, 21. Permanent PDF Redaction Tool, Key Capabilities (+2 more)
+Cohesion: 0.16
+Nodes (5): PageSpatialData, PdfTextExtractor, SpatialTextExtractor, PDFTextStripper, Added
 
 ### Community 171 - "SignatureTab"
 Cohesion: 0.40
@@ -862,16 +859,16 @@ Cohesion: 0.60
 Nodes (5): lg, $type, $value, lg, lg
 
 ### Community 176 - "PdfViewerScreen"
-Cohesion: 0.12
-Nodes (7): ExtractPageDialog(), PageActionItem(), PageActionsBottomSheet(), AddEditBookmarkDialog(), EditFormFieldDialog(), PdfViewerScreen(), Key Classes
+Cohesion: 0.15
+Nodes (6): ExtractPageDialog(), AddEditBookmarkDialog(), EditFormFieldDialog(), PdfViewerScreen(), FeatureRow(), WelcomeScreen()
 
 ### Community 177 - "ZoomableBox.kt"
 Cohesion: 0.18
 Nodes (3): clampOffset(), distance(), ZoomableBox()
 
-### Community 180 - "8. PDF Compression Utility"
-Cohesion: 0.40
-Nodes (5): 8. PDF Compression Utility, Capabilities, Key Classes, Navigation, Overview
+### Community 180 - "render-html.py"
+Cohesion: 0.23
+Nodes (4): generate_html(), get_deliverable_info(), get_image_base64(), main()
 
 ### Community 181 - "padding-y"
 Cohesion: 0.67
@@ -881,21 +878,29 @@ Nodes (4): padding-y, padding-y, $type, $value
 Cohesion: 0.67
 Nodes (4): $type, $value, none, none
 
-### Community 184 - "PdfSecurityViewModel.kt"
-Cohesion: 0.32
-Nodes (7): PdfSecurityUiState, SecurityPermissions, SecurityProtectionConfig, SecurityResult, SecurityToolMode, PROTECT, UNLOCK
+### Community 183 - ".queryFileSize"
+Cohesion: 0.20
+Nodes (5): PdfSecurityUiState, SecurityPermissions, SecurityProtectionConfig, SecurityResult, PdfSecurityManager
 
-### Community 185 - "CompressPdfScreen"
-Cohesion: 0.31
-Nodes (6): CompressionLevelCard(), CompressionSuccessDialog(), CompressPdfScreen(), EmptyCompressView(), FeatureItem(), sharePdf()
+### Community 185 - "test_native_desktop_stack_freshness.py"
+Cohesion: 0.06
+Nodes (5): _rows(), TestNativeDesktopStackFreshness, TestFixtureValidation, TestMetricMath, TestThresholdGate
 
 ### Community 186 - "PdfRedactionScreen"
-Cohesion: 0.24
-Nodes (8): RedactionConfirmDialog(), RedactionSuccessDialog(), EmptyStateCard(), FeatureBullet(), formatFileSize(), PdfRedactionScreen(), RedactionPageCanvas(), SourceDocumentCard()
+Cohesion: 0.31
+Nodes (7): RedactionSuccessDialog(), EmptyStateCard(), FeatureBullet(), formatFileSize(), PdfRedactionScreen(), RedactionPageCanvas(), SourceDocumentCard()
 
 ### Community 187 - "4. Page Management (Insert, Extract & Delete Pages)"
 Cohesion: 0.50
 Nodes (4): 4. Page Management (Insert, Extract & Delete Pages), Capabilities, Key Classes, Overview
+
+### Community 191 - "ImageToPdfEngine.kt"
+Cohesion: 0.12
+Nodes (7): PaginationAnchor, BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT, TOP_CENTER, TOP_LEFT, TOP_RIGHT
+
+### Community 196 - "CropDragHandle"
+Cohesion: 0.18
+Nodes (11): CropDragHandle, BODY, BOTTOM_LEFT, BOTTOM_RIGHT, EDGE_BOTTOM, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP (+3 more)
 
 ### Community 197 - "20. Interactive Form Field Filler (AcroForm) & PDF Flattening Engine"
 Cohesion: 0.50
@@ -933,9 +938,9 @@ Nodes (4): 22. PDF Watermark & Dynamic Pagination Utility, Key Capabilities, Key
 Cohesion: 0.67
 Nodes (3): destructive, $type, $value
 
-### Community 206 - "MergePdfScreen"
-Cohesion: 0.80
-Nodes (3): MergeDocumentCard(), MergePdfEmptyState(), MergePdfScreen()
+### Community 206 - "PdfSearchHighlightCanvas.kt"
+Cohesion: 0.16
+Nodes (8): SearchMatch, PdfSearchEngine, WordSpan, PdfSearchHighlightCanvas(), 21. Permanent PDF Redaction Tool, Key Capabilities, Key Files, Overview
 
 ### Community 207 - "destructive-foreground"
 Cohesion: 0.67
@@ -946,8 +951,8 @@ Cohesion: 0.67
 Nodes (3): muted, $type, $value
 
 ### Community 209 - "AudioReaderUiState"
-Cohesion: 0.10
-Nodes (22): AudioPageContent, AudioPlaybackStatus, BUFFERING, IDLE, PAUSED, PLAYING, AudioReaderUiState, AudioSentence (+14 more)
+Cohesion: 0.22
+Nodes (7): SleepTimerPreset, END_OF_PAGE, MIN_15, MIN_30, MIN_45, MIN_60, OFF
 
 ### Community 210 - "primary-foreground"
 Cohesion: 0.67
@@ -962,72 +967,92 @@ Cohesion: 0.67
 Nodes (3): secondary-foreground, $type, $value
 
 ### Community 213 - "AudioSpeed"
-Cohesion: 0.08
-Nodes (19): AudioSpeed, SPEED_0_75, SPEED_1_0, SPEED_1_25, SPEED_1_5, SPEED_1_75, SPEED_2_0, onRangeStart() (+11 more)
+Cohesion: 0.10
+Nodes (14): AudioPlaybackStatus, BUFFERING, IDLE, PAUSED, PLAYING, AudioSpeed, SPEED_0_75, SPEED_1_0 (+6 more)
 
-### Community 214 - "10. E-Signature & Secure Contract Signing"
-Cohesion: 0.50
-Nodes (4): 10. E-Signature & Secure Contract Signing, Capabilities, Key Classes, Overview
+### Community 214 - "CompressPdfScreen"
+Cohesion: 0.31
+Nodes (6): CompressionLevelCard(), CompressionSuccessDialog(), CompressPdfScreen(), EmptyCompressView(), FeatureItem(), sharePdf()
 
-### Community 215 - "ScannedPdfCreator.kt"
-Cohesion: 0.18
-Nodes (8): ScanFilterMode, BLACK_AND_WHITE, ENHANCE, GRAYSCALE, MAGIC_COLOR, ORIGINAL, DocumentScanPage, ScannedPdfCreator
+### Community 216 - "DiscardChangesDialog"
+Cohesion: 0.29
+Nodes (5): DiscardChangesDialog(), MergeDocumentCard(), MergePdfEmptyState(), MergePdfScreen(), OcrScannerScreen()
 
-### Community 216 - "9. Create PDF Speed Dial & Document Scanner"
-Cohesion: 0.50
-Nodes (4): 9. Create PDF Speed Dial & Document Scanner, Capabilities, Key Classes, Overview
+### Community 217 - "MainAppContainer"
+Cohesion: 0.31
+Nodes (4): AppDrawerContent(), TelemetryRow(), MainAppContainer(), MainTopAppBar()
 
 ### Community 218 - "6. On-Device OCR Scanner"
 Cohesion: 0.40
 Nodes (5): 6. On-Device OCR Scanner, Capabilities, Key Classes, Navigation, Overview
 
+### Community 219 - "OutlineNode"
+Cohesion: 0.42
+Nodes (7): OutlineNode, BookmarkCard(), BookmarksTabView(), ContentsTabView(), DocumentOutlineSheet(), OutlineNodeRow(), renderOutlineNode()
+
+### Community 220 - "PdfWatermarkScreen"
+Cohesion: 0.52
+Nodes (3): PaginationOptionsSection(), PdfWatermarkScreen(), WatermarkOptionsSection()
+
 ### Community 221 - "13. Standalone PDF Lock & Unlock Tool"
 Cohesion: 0.50
 Nodes (4): 13. Standalone PDF Lock & Unlock Tool, Capabilities, Key Classes, Overview
+
+### Community 222 - "SignPdfScreen"
+Cohesion: 0.36
+Nodes (7): FeatureCheckRow(), ScaffoldWrapper(), SignBottomDeck(), SignEmptyHero(), SignPdfScreen(), SignTopAppBar(), StampItemView()
 
 ### Community 224 - "5. Save Mode System ("Overwrite" vs "Save As Copy")"
 Cohesion: 0.50
 Nodes (4): 5. Save Mode System ("Overwrite" vs "Save As Copy"), Key Classes, Options, Overview
 
-### Community 226 - "CropDocumentStudioView"
-Cohesion: 0.31
-Nodes (3): DocumentImageProcessor, CropDocumentStudioView(), Changed & Enhanced
+### Community 225 - "PageActionsBottomSheet"
+Cohesion: 0.15
+Nodes (8): DeletePageDialog(), PageActionItem(), PageActionsBottomSheet(), 2. Multi-Function Long-Press Menu, Actions Available, Key Classes, Overview, User Flow
+
+### Community 226 - "DocumentImageProcessor.kt"
+Cohesion: 0.16
+Nodes (7): DocumentImageProcessor, ScanFilterMode, BLACK_AND_WHITE, ENHANCE, GRAYSCALE, MAGIC_COLOR, ORIGINAL
 
 ### Community 231 - "CustomDocumentScannerScreen"
-Cohesion: 0.21
-Nodes (6): AutoDetectDocumentOverlay(), CameraCaptureView(), OnImageCapturedCallback, CustomDocumentScannerScreen(), DocumentReviewEditorView(), processImageProxyForAutoDetect()
+Cohesion: 0.16
+Nodes (12): ScanFilenamePromptDialog(), ScannedDocumentDialog(), AutoDetectDocumentOverlay(), CameraCaptureView(), CropDocumentStudioView(), CustomDocumentScannerScreen(), DocumentReviewEditorView(), processImageProxyForAutoDetect() (+4 more)
+
+### Community 235 - "14. Document Outline (Table of Contents) & User Bookmarks"
+Cohesion: 0.50
+Nodes (4): 14. Document Outline (Table of Contents) & User Bookmarks, Capabilities, Key Classes, Overview
 
 ### Community 236 - "ImageToPdfEngine.kt"
-Cohesion: 0.06
-Nodes (33): ConverterMode, IMAGE_TO_PDF, PDF_TO_IMAGE, ConverterResult, DpiPreset, HIGH, STANDARD, ULTRA (+25 more)
+Cohesion: 0.07
+Nodes (30): ConverterResult, DpiPreset, HIGH, STANDARD, ULTRA, ImageExportFormat, JPEG, PNG (+22 more)
+
+### Community 237 - "15. In-Document Full-Text Search Engine"
+Cohesion: 0.50
+Nodes (4): 15. In-Document Full-Text Search Engine, Capabilities, Key Classes, Overview
 
 ### Community 238 - "16. Night Reading & Eye Comfort Modes"
 Cohesion: 0.50
 Nodes (4): 16. Night Reading & Eye Comfort Modes, Capabilities, Key Classes, Overview
 
-### Community 239 - "23. Bidirectional Image-PDF Conversion Studio"
-Cohesion: 0.50
-Nodes (4): 23. Bidirectional Image-PDF Conversion Studio, Key Files, Operating Modes, Overview
-
 ## Knowledge Gaps
 - **121 isolated node(s):** `IDLE`, `BUFFERING`, `PLAYING`, `PAUSED`, `SPEED_0_75` (+116 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2171 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **42 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **53 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `PdfViewerViewModel` connect `PdfViewerViewModel` to `DocumentOutlineSheet.kt`, `Context`, `ReadingMode`, `TextToSpeechManager.kt`, `ContinuousAudioReader`, `PdfDocumentModifier`, `SignPdfScreen.kt`, `PdfViewerScreen`, `PdfRendererCore`, `PdfFormManager.kt`, `PdfViewerScreen.kt`, `PdfViewerViewModel.kt`, `AudioReaderUiState`, `AudioSpeed`, `MainAppContainer`, `FloatingTextToolbar.kt`, `PdfPrintAdapter.kt`, `PdfPageItem`, `PdfOutlineExtractor.kt`, `RecentDocumentsRepository`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+- **Why does `PdfViewerViewModel` connect `PdfViewerViewModel` to `DocumentOutlineSheet.kt`, `Context`, `ReadingMode`, `SignPdfViewModel.kt`, `AudioPlaybackService`, `TextToSpeechManager.kt`, `ContinuousAudioReader`, `PdfDocumentModifier`, `SignPdfScreen.kt`, `SpatialTextExtractor.kt`, `PdfViewerScreen`, `PdfRendererCore`, `PdfFormManager.kt`, `PdfViewerScreen.kt`, `PdfViewerViewModel.kt`, `AudioReaderUiState`, `AudioSpeed`, `onRangeStart`, `MainAppContainer`, `PdfPrintAdapter.kt`, `PdfPageItem`, `RecentDocumentsRepository`?**
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `TailwindConfigGenerator` (e.g. with `TestGeneratedConfigIsValidJs` and `TestTailwindConfigGenerator`) actually correct?**
   _`TailwindConfigGenerator` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `IDLE`, `BUFFERING`, `PLAYING` to the rest of the system?**
   _121 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `PdfRedactionViewModel` be split into smaller, more focused modules?**
-  _Cohesion score 0.1368421052631579 - nodes in this community are weakly interconnected._
-- **Why does `PdfRendererCore` connect `PdfRendererCore` to `PdfRedactionViewModel`, `RecentDocument`, `CropDocumentStudioView`, `Context`, `PdfCompressor.kt`, `3. Detailed Feature Specifications`, `PdfViewerViewModel`, `SpatialTextExtractor.kt`, `MergePdfViewModel`, `PageOrganizerViewModel`, `PdfViewerViewModel.kt`, `SignPdfViewModel`, `RecentDocumentsRepository`, `10. E-Signature & Secure Contract Signing`?**
+  _Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected._
+- **Why does `PdfRendererCore` connect `PdfRendererCore` to `PdfRedactionViewModel`, `RecentDocument`, `PageOrganizerScreen`, `Context`, `PdfCompressor.kt`, `3. Detailed Feature Specifications`, `PdfViewerViewModel`, `SpatialTextExtractor.kt`, `MergePdfViewModel`, `SignPdfViewModel.kt`, `PdfSearchHighlightCanvas.kt`, `PageOrganizerViewModel`, `PdfViewerViewModel.kt`, `SignPdfViewModel`, `BitmapLruCache`?**
   _High betweenness centrality (0.051) - this node is a cross-community bridge._
 - **Should `ShadcnInstaller` be split into smaller, more focused modules?**
   _Cohesion score 0.053555750658472345 - nodes in this community are weakly interconnected._
-- **Why does `PageOrganizerViewModel` connect `PageOrganizerViewModel` to `PdfRendererCore`, `PageOrganizerScreen.kt`, `PdfViewerScreen.kt`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Why does `PageOrganizerViewModel` connect `PageOrganizerViewModel` to `PdfRendererCore`, `SignPdfScreen.kt`, `PageOrganizerScreen`, `PdfViewerScreen.kt`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._

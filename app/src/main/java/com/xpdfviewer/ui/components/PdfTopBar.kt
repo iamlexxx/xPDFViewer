@@ -152,24 +152,6 @@ fun PdfTopBar(
                         )
                     }
 
-                    // Table of contents / Outline navigation button
-                    IconButton(onClick = onOpenOutline) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                            contentDescription = "Document outline",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    // Bookmark toggle action button
-                    IconButton(onClick = onToggleBookmark) {
-                        Icon(
-                            imageVector = if (isCurrentPageBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                            contentDescription = if (isCurrentPageBookmarked) "Page bookmarked" else "Bookmark page",
-                            tint = if (isCurrentPageBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
                     // Form filling assistant action button (visible if AcroForm detected)
                     if (hasAcroForm) {
                         IconButton(onClick = onOpenFormSheet) {
@@ -179,33 +161,6 @@ fun PdfTopBar(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
-
-                    // Audio reader / Audiobook mode toggle
-                    IconButton(onClick = onToggleAudioReader) {
-                        Icon(
-                            imageVector = Icons.Default.Headphones,
-                            contentDescription = "Audiobook Reader",
-                            tint = if (isAudioReaderActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    // Reading mode / Eye comfort action button
-                    IconButton(onClick = onOpenReadingMode) {
-                        Icon(
-                            imageVector = Icons.Default.Palette,
-                            contentDescription = "Reading mode",
-                            tint = if (readingMode != ReadingMode.DEFAULT) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    // Page Organizer grid action button
-                    IconButton(onClick = onOpenPageOrganizer) {
-                        Icon(
-                            imageVector = Icons.Default.GridView,
-                            contentDescription = "Organize pages",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
                     }
 
                     // Print document action button

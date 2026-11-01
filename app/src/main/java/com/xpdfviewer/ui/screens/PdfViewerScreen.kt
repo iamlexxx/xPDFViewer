@@ -69,7 +69,9 @@ import com.xpdfviewer.ui.components.AudioVoiceSettingsSheet
 import com.xpdfviewer.ui.components.DeletePageDialog
 import com.xpdfviewer.ui.components.DocumentOutlineSheet
 import com.xpdfviewer.ui.components.ExtractPageDialog
+import com.xpdfviewer.data.ReadingMode
 import com.xpdfviewer.ui.components.FloatingTextToolbar
+import com.xpdfviewer.ui.components.FloatingViewerNavigationMenu
 import com.xpdfviewer.ui.components.FormActionsBar
 import com.xpdfviewer.ui.components.FormFieldsBottomSheet
 import com.xpdfviewer.ui.components.JumpToPageDialog
@@ -372,7 +374,7 @@ fun PdfViewerScreen(
                             fileName = uiState.fileName,
                             currentPage = uiState.currentPage,
                             pageCount = uiState.pageCount,
-                            isVisible = true,
+                            isVisible = uiState.showControls,
                             onOpenJumpDialog = { viewModel.showJumpDialog(true) },
                             onCloseDocument = { viewModel.closeDocument() },
                             onPrintDocument = { viewModel.printDocument(context) },
@@ -407,7 +409,11 @@ fun PdfViewerScreen(
                     ) {
                         ZoomableBox(
                             modifier = Modifier.fillMaxSize(),
-                            onTap = {}
+                            onTap = {
+                                if (!isSelectionActive && !uiState.audioReaderState.isActive) {
+                                    viewModel.toggleControls()
+                                }
+                            }
                         ) { currentScale ->
                             if (isLandscape) {
                                 // Landscape Mode: HorizontalPager (scroll disabled during text handle dragging)
@@ -505,6 +511,25 @@ fun PdfViewerScreen(
                                     .align(Alignment.BottomCenter)
                                     .navigationBarsPadding()
                                     .padding(bottom = if (uiState.formState.hasAcroForm) 76.dp else 16.dp)
+                            )
+                        }
+
+                        // Floating Viewer Navigation Menu (Outline, Bookmark, Audio, Reading Mode, Page Grid)
+                        if (!isSelectionActive && !uiState.audioReaderState.isActive) {
+                            FloatingViewerNavigationMenu(
+                                isVisible = uiState.showControls,
+                                onOpenOutline = { viewModel.openOutlineSheet() },
+                                isCurrentPageBookmarked = uiState.isCurrentPageBookmarked,
+                                onToggleBookmark = { viewModel.toggleCurrentPageBookmark() },
+                                isAudioReaderActive = uiState.audioReaderState.isActive,
+                                onToggleAudioReader = { viewModel.toggleAudioReader(context) },
+                                isReadingModeActive = (uiState.readingMode != ReadingMode.DEFAULT),
+                                onOpenReadingMode = { viewModel.openReadingModeSheet() },
+                                onOpenPageOrganizer = { isPageOrganizerOpen = true },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .navigationBarsPadding()
+                                    .padding(bottom = if (uiState.formState.hasAcroForm) 76.dp else 20.dp)
                             )
                         }
                     }

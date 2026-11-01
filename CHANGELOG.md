@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.4] - 2026-11-01
 
 ### Added
+- **Floating Viewer Navigation Menu (FloatingViewerNavigationMenu.kt)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (MenuBook)**: Immediate access to document tree and table of contents.
+    * **Bookmark (Bookmark / BookmarkBorder)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (Headphones)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (Palette)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (GridView)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **Continuous Audio Reader (Document Audiobook Mode)**:
   - Built offline hands-free audiobook reader with sentence coordinate synchronization (`ContinuousAudioReader.kt`, `AudioReaderModels.kt`, `AudioPlayerDock.kt`, `PdfAudioHighlightCanvas.kt`, `AudioSentenceSegmenterTest.kt`).
   - **Sentence Segmentation & Audio Focus**:
@@ -63,6 +81,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.3] - 2026-11-01
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **Permanent PDF Redaction Tool (Standalone Offline Studio)**:
   - Built comprehensive, privacy-first redaction suite (`PdfRedactionEngine.kt`, `RedactionModels.kt`, `PdfRedactionViewModel.kt`, `PdfRedactionScreen.kt`, `RedactionConfirmDialog.kt`, `RedactionSuccessDialog.kt`).
   - **Vector Stream Blackout**:
@@ -84,6 +111,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.2] - 2026-11-01
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **Interactive Form Field Filler (AcroForm) & PDF Flattening Engine**:
   - Built comprehensive, offline AcroForm inspection and form manipulation engine (`PdfFormManager.kt`, `PdfFormFieldModels.kt`, `PdfFormOverlayCanvas.kt`, `FormFieldsBottomSheet.kt`, `FormActionsBar.kt`, `EditFormFieldDialog.kt`, `FormSaveChoiceDialog.kt`).
   - **AcroForm Inspection & Coordinate Mapping**:
@@ -109,6 +145,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.1] - 2026-11-01
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **Split PDF Utility (Standalone Studio)**:
   - Built dedicated offline PDF splitting and page extraction engine (`PdfSplitterEngine.kt`, `SplitPdfModels.kt`, `SplitPdfViewModel.kt`, `SplitPdfScreen.kt`, `SplitSuccessDialog.kt`).
   - **Flexible Split Modes**:
@@ -133,6 +178,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.0] - 2026-11-01
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **Night Reading & Eye Comfort Modes**:
   - Built zero-overhead, GPU-accelerated visual display filter pipeline (`ReadingMode.kt`, `ReadingModeBottomSheet.kt`).
   - **5 Reading Presets**:
@@ -217,6 +271,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Navigation Drawer Menu Label**: Renamed drawer action from "Open Files" to "Open document" in `AppNavigationDrawer.kt`.
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **E-Signature & Secure Contract Signing Suite**:
   - Activated the "E-Signature" card on the Tools tab with a **Ready** status badge (`Color(0xFFDCFCE7)`).
   - Built offline on-device PDF signing suite (`SignPdfScreen.kt`, `SignPdfViewModel.kt`, `PdfSignerEngine.kt`).
@@ -298,6 +361,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2026-10-18
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - **Multi-Function Long-Press Menu**:
   - Replaced single-action press-and-hold copy with `PageActionBottomSheet`.
   - Added **Select Text** action to launch interactive on-screen selection.
@@ -322,6 +394,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - Initial Release
 
 ### Added
+- **Floating Viewer Navigation Menu (`FloatingViewerNavigationMenu.kt`)**:
+  - Replaced crowded top app bar icon cluster with an ergonomic glassmorphic floating bottom navigation pill.
+  - Houses the 5 essential reader controls in thumb-friendly horizontal order:
+    * **Outline & Contents (`MenuBook`)**: Immediate access to document tree and table of contents.
+    * **Bookmark (`Bookmark` / `BookmarkBorder`)**: 1-tap page bookmarking with active state primary tint.
+    * **Continuous Audiobook (`Headphones`)**: Toggles hands-free audio reader with glowing active indicator.
+    * **Reading Mode (`Palette`)**: Direct launcher for eye comfort palettes (Night, Sepia, Grayscale).
+    * **Page Grid (`GridView`)**: Full document thumbnail overview and page organizer launcher.
+  - Distraction-free single tap viewport toggle smoothly animating controls in and out together.
 - Modern Jetpack Compose Material 3 PDF Viewer.
 - Dual theme engine with dynamic Light and Dark mode switching.
 - Asynchronous PDF page rendering via Android's native `android.graphics.pdf.PdfRenderer`.

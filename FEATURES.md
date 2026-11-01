@@ -29,6 +29,13 @@ High-fidelity, smooth PDF viewing engine designed around Material 3 and edge-to-
 - **Dynamic Theming**: Full Light and Dark Mode support with tailored surface tones (`MaterialTheme.colorScheme`).
 - **High-Performance Page Rendering**: Background page rendering using Android's native `android.graphics.pdf.PdfRenderer` and asynchronous Kotlin Coroutines.
 - **Pinch-to-Zoom & Pan**: Full gesture support with zoom memory per page.
+- **Floating Reading Navigation Menu (`FloatingViewerNavigationMenu.kt`)**: Ergonomic glassmorphic floating pill docked at bottom center housing the 5 core reading tools in an accessible, thumb-friendly cluster:
+  1. **Outline & TOC (`MenuBook`)**: Opens document hierarchy and table of contents.
+  2. **Bookmark (`Bookmark` / `BookmarkBorder`)**: One-tap toggle for current page bookmark with active state glow.
+  3. **Audiobook (`Headphones`)**: Toggles continuous speech playback with real-time word karaoke highlighting.
+  4. **Reading Mode (`Palette`)**: Opens eye comfort presets (Night, Sepia, High Contrast, Grayscale).
+  5. **Page Grid (`GridView`)**: Launches full-screen page organizer and thumbnail sheet.
+- **Distraction-Free Immersion Mode**: Tapping the document viewport seamlessly animates both the top bar and floating navigation pill in and out together.
 - **Recents & History Management**: Local tracking of recently opened documents, last-read page offsets, formatted file size, resolved storage paths, and last opened date & time (e.g., `Oct 18, 2026 • 7:15 PM`) displayed with calendar iconography across both "Jump Back In" on the Home tab and "Reading History" on the Recent tab. Supports "Clear All" bulk clearing alongside smooth Material 3 **Swipe to Remove** gestures with animated red trash reveal on individual cards.
 - **Print & Share**: Built-in print spooling via Android `PrintManager` and document sharing.
 
