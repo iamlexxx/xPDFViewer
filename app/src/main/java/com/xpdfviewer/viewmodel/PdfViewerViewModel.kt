@@ -71,7 +71,17 @@ class PdfViewerViewModel : ViewModel() {
             recentRepository = RecentDocumentsRepository(context.applicationContext)
             loadRecentDocuments()
             val savedReadingMode = recentRepository?.getSavedReadingMode() ?: ReadingMode.DEFAULT
-            _uiState.update { it.copy(readingMode = savedReadingMode) }
+            val savedPitch = recentRepository?.getSavedVoicePitch() ?: 1.0f
+            val savedVoiceId = recentRepository?.getSavedVoiceId()
+            _uiState.update {
+                it.copy(
+                    readingMode = savedReadingMode,
+                    audioReaderState = it.audioReaderState.copy(
+                        pitch = savedPitch,
+                        selectedVoiceId = savedVoiceId
+                    )
+                )
+            }
         }
     }
 
@@ -1178,6 +1188,8 @@ class PdfViewerViewModel : ViewModel() {
     private fun getOrCreateAudioReader(context: Context): ContinuousAudioReader {
         return continuousAudioReader ?: ContinuousAudioReader(context.applicationContext, viewModelScope).also { reader ->
             continuousAudioReader = reader
+            reader.setPitch(_uiState.value.audioReaderState.pitch)
+            _uiState.value.audioReaderState.selectedVoiceId?.let { reader.setVoice(it) }
 
             // Wire Service Commander for system notifications & lock screen controls
             AudioPlaybackService.commander = object : AudioPlaybackService.AudioPlaybackCommander {
@@ -1379,6 +1391,7 @@ class PdfViewerViewModel : ViewModel() {
 
     fun setAudioPitch(pitch: Float) {
         continuousAudioReader?.setPitch(pitch)
+        recentRepository?.saveVoicePitch(pitch)
         _uiState.update { state ->
             state.copy(audioReaderState = state.audioReaderState.copy(pitch = pitch))
         }
@@ -1386,6 +1399,7 @@ class PdfViewerViewModel : ViewModel() {
 
     fun setAudioVoice(voiceProfile: AudioVoiceProfile) {
         continuousAudioReader?.setVoice(voiceProfile.id)
+        recentRepository?.saveVoiceId(voiceProfile.id)
         _uiState.update { state ->
             state.copy(
                 audioReaderState = state.audioReaderState.copy(

@@ -201,10 +201,36 @@ class RecentDocumentsRepository(context: Context) {
 
     // endregion
 
+    // region Voice and Pitch Settings
+
+    fun getSavedVoiceId(): String? {
+        return prefs.getString(KEY_SAVED_VOICE_ID, null)
+    }
+
+    fun saveVoiceId(voiceId: String?) {
+        if (voiceId != null) {
+            prefs.edit().putString(KEY_SAVED_VOICE_ID, voiceId).apply()
+        } else {
+            prefs.edit().remove(KEY_SAVED_VOICE_ID).apply()
+        }
+    }
+
+    fun getSavedVoicePitch(): Float {
+        return prefs.getFloat(KEY_SAVED_VOICE_PITCH, 1.0f)
+    }
+
+    fun saveVoicePitch(pitch: Float) {
+        prefs.edit().putFloat(KEY_SAVED_VOICE_PITCH, pitch).apply()
+    }
+
+    // endregion
+
     companion object {
         private const val PREFS_NAME = "xpdf_recents_pref"
         private const val KEY_RECENTS = "recent_documents_list"
         private const val KEY_BOOKMARKS = "user_bookmarks_list"
         private const val KEY_SAVED_READING_MODE = "saved_reading_mode"
+        private const val KEY_SAVED_VOICE_ID = "saved_audio_voice_id"
+        private const val KEY_SAVED_VOICE_PITCH = "saved_audio_voice_pitch"
     }
 }
