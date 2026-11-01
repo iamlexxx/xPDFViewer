@@ -88,7 +88,10 @@ enum class ActiveToolScreen {
     OCR_SCANNER,
     MERGE_PDF,
     COMPRESS_PDF,
-    SIGN_PDF
+    SIGN_PDF,
+    SECURITY_TOOL,
+    SPLIT_PDF,
+    REDACT_PDF
 }
 
 @Composable
@@ -202,7 +205,10 @@ fun MainAppContainer(
                                     onOpenOcrScanner = { activeToolScreen = ActiveToolScreen.OCR_SCANNER },
                                     onOpenMergePdf = { activeToolScreen = ActiveToolScreen.MERGE_PDF },
                                     onOpenCompressPdf = { activeToolScreen = ActiveToolScreen.COMPRESS_PDF },
-                                    onOpenSignPdf = { activeToolScreen = ActiveToolScreen.SIGN_PDF }
+                                    onOpenSignPdf = { activeToolScreen = ActiveToolScreen.SIGN_PDF },
+                                    onOpenSecurity = { activeToolScreen = ActiveToolScreen.SECURITY_TOOL },
+                                    onOpenSplitPdf = { activeToolScreen = ActiveToolScreen.SPLIT_PDF },
+                                    onOpenRedactPdf = { activeToolScreen = ActiveToolScreen.REDACT_PDF }
                                 )
                             }
                         }
@@ -308,6 +314,33 @@ fun MainAppContainer(
                         SignPdfScreen(
                             onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
                             onOpenSignedPdf = { uri ->
+                                activeToolScreen = ActiveToolScreen.NONE
+                                viewModel.loadPdf(context, uri)
+                            }
+                        )
+                    }
+                    ActiveToolScreen.SECURITY_TOOL -> {
+                        PdfSecurityScreen(
+                            onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
+                            onOpenPdf = { uri ->
+                                activeToolScreen = ActiveToolScreen.NONE
+                                viewModel.loadPdf(context, uri)
+                            }
+                        )
+                    }
+                    ActiveToolScreen.SPLIT_PDF -> {
+                        SplitPdfScreen(
+                            onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
+                            onOpenPdf = { uri ->
+                                activeToolScreen = ActiveToolScreen.NONE
+                                viewModel.loadPdf(context, uri)
+                            }
+                        )
+                    }
+                    ActiveToolScreen.REDACT_PDF -> {
+                        PdfRedactionScreen(
+                            onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
+                            onOpenPdf = { uri ->
                                 activeToolScreen = ActiveToolScreen.NONE
                                 viewModel.loadPdf(context, uri)
                             }

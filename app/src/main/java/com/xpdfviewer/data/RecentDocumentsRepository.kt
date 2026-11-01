@@ -71,6 +71,102 @@ class RecentDocumentsRepository(context: Context) {
         prefs.edit().remove(KEY_RECENTS).apply()
     }
 
+    // region User Bookmarks
+
+    fun getAllBookmarks(): List<UserBookmark> {
+        val jsonString = prefs.getString(KEY_BOOKMARKS, null) ?: return emptyList()
+        val list = mutableListOf<UserBookmark>()
+        try {
+            val jsonArray = JSONArray(jsonString)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                list.add(
+                    UserBookmark(
+                        id = obj.getString("id"),
+                        uriString = obj.getString("uri"),
+                        pageIndex = obj.getInt("pageIndex"),
+                        title = obj.getString("title"),
+                        note = obj.optString("note", ""),
+                        createdAt = obj.optLong("createdAt", System.currentTimeMillis())
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return list
+    }
+
+    fun getUserBookmarks(uriString: String): List<UserBookmark> {
+        return getAllBookmarks()
+            .filter { it.uriString == uriString }
+            .sortedBy { it.pageIndex }
+    }
+
+    fun saveBookmark(bookmark: UserBookmark) {
+        val all = getAllBookmarks().toMutableList()
+        // If bookmark already exists with this ID, replace it
+        val index = all.indexOfFirst { it.id == bookmark.id }
+        if (index != -1) {
+            all[index] = bookmark
+        } else {
+            // Also replace if there is already a bookmark on the exact same page for this URI
+            val pageIndex = all.indexOfFirst { it.uriString == bookmark.uriString && it.pageIndex == bookmark.pageIndex }
+            if (pageIndex != -1) {
+                all[pageIndex] = bookmark
+            } else {
+                all.add(bookmark)
+            }
+        }
+        persistBookmarks(all)
+    }
+
+    fun deleteBookmark(bookmarkId: String) {
+        val all = getAllBookmarks().toMutableList()
+        val removed = all.removeAll { it.id == bookmarkId }
+        if (removed) {
+            persistBookmarks(all)
+        }
+    }
+
+    fun deleteBookmarkForPage(uriString: String, pageIndex: Int) {
+        val all = getAllBookmarks().toMutableList()
+        val removed = all.removeAll { it.uriString == uriString && it.pageIndex == pageIndex }
+        if (removed) {
+            persistBookmarks(all)
+        }
+    }
+
+    fun isPageBookmarked(uriString: String, pageIndex: Int): Boolean {
+        return getAllBookmarks().any { it.uriString == uriString && it.pageIndex == pageIndex }
+    }
+
+    fun getBookmarkForPage(uriString: String, pageIndex: Int): UserBookmark? {
+        return getAllBookmarks().firstOrNull { it.uriString == uriString && it.pageIndex == pageIndex }
+    }
+
+    private fun persistBookmarks(list: List<UserBookmark>) {
+        try {
+            val jsonArray = JSONArray()
+            for (item in list) {
+                val obj = JSONObject().apply {
+                    put("id", item.id)
+                    put("uri", item.uriString)
+                    put("pageIndex", item.pageIndex)
+                    put("title", item.title)
+                    put("note", item.note)
+                    put("createdAt", item.createdAt)
+                }
+                jsonArray.put(obj)
+            }
+            prefs.edit().putString(KEY_BOOKMARKS, jsonArray.toString()).apply()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // endregion
+
     private fun persist(list: List<RecentDocument>) {
         try {
             val jsonArray = JSONArray()
@@ -92,8 +188,23 @@ class RecentDocumentsRepository(context: Context) {
         }
     }
 
+    // region Reading Mode
+
+    fun getSavedReadingMode(): ReadingMode {
+        val id = prefs.getString(KEY_SAVED_READING_MODE, null) ?: return ReadingMode.DEFAULT
+        return ReadingMode.fromId(id)
+    }
+
+    fun saveReadingMode(mode: ReadingMode) {
+        prefs.edit().putString(KEY_SAVED_READING_MODE, mode.id).apply()
+    }
+
+    // endregion
+
     companion object {
         private const val PREFS_NAME = "xpdf_recents_pref"
         private const val KEY_RECENTS = "recent_documents_list"
+        private const val KEY_BOOKMARKS = "user_bookmarks_list"
+        private const val KEY_SAVED_READING_MODE = "saved_reading_mode"
     }
 }

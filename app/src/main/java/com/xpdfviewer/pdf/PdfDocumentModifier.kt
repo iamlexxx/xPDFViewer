@@ -397,6 +397,83 @@ object PdfDocumentModifier {
     }
 
     /**
+     * Specification for a page in a reorganized PDF document.
+     */
+    data class PageTransformSpec(
+        val originalIndex: Int,
+        val rotationOffset: Int = 0
+    )
+
+    /**
+     * Applies a batch page reorganization (reordering, rotation, deletion, and extraction)
+     * by constructing a new document from the source and saving it to the destination URI.
+     */
+    suspend fun applyPageOrganization(
+        context: Context,
+        sourceUri: Uri,
+        destinationUri: Uri = sourceUri,
+        transformations: List<PageTransformSpec>
+    ): Boolean = withContext(Dispatchers.IO) {
+        if (transformations.isEmpty()) return@withContext false
+        PdfTextExtractor.initialize(context)
+        val tempFile = File(context.cacheDir, "xpdf_organize_${System.currentTimeMillis()}.pdf")
+        var srcDoc: PDDocument? = null
+        var outDoc: PDDocument? = null
+
+        try {
+            val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return@withContext false
+            srcDoc = PDDocument.load(inputStream)
+            outDoc = PDDocument()
+
+            if (srcDoc.isEncrypted) {
+                runCatching {
+                    srcDoc.setAllSecurityToBeRemoved(true)
+                }
+            }
+
+            for (spec in transformations) {
+                if (spec.originalIndex in 0 until srcDoc.numberOfPages) {
+                    val srcPage = srcDoc.getPage(spec.originalIndex)
+                    val importedPage = outDoc.importPage(srcPage)
+                    val netRotation = ((importedPage.rotation + spec.rotationOffset) % 360 + 360) % 360
+                    importedPage.rotation = netRotation
+                } else if (spec.originalIndex == -1) {
+                    // Blank page insertion
+                    val blankPage = PDPage(PDRectangle.A4)
+                    val importedPage = outDoc.importPage(blankPage)
+                    importedPage.rotation = ((spec.rotationOffset % 360) + 360) % 360
+                }
+            }
+
+            if (outDoc.numberOfPages == 0) {
+                return@withContext false
+            }
+
+            FileOutputStream(tempFile).use { outStream ->
+                outDoc.save(outStream)
+            }
+
+            // Stream bytes to destination content URI
+            context.contentResolver.openOutputStream(destinationUri, "wt")?.use { outStream ->
+                tempFile.inputStream().use { inStream ->
+                    inStream.copyTo(outStream)
+                }
+            } ?: return@withContext false
+
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        } finally {
+            runCatching { srcDoc?.close() }
+            runCatching { outDoc?.close() }
+            if (tempFile.exists()) {
+                tempFile.delete()
+            }
+        }
+    }
+
+    /**
      * Fast retrieval of total page count for a given PDF document URI.
      */
     suspend fun getPdfPageCount(context: Context, uri: Uri): Int = withContext(Dispatchers.IO) {

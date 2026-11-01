@@ -10,18 +10,36 @@ import android.print.PrintManager
 import android.provider.OpenableColumns
 import android.widget.Toast
 import com.xpdfviewer.pdf.PdfDocumentModifier
+import com.xpdfviewer.pdf.PdfFormManager
 import com.xpdfviewer.pdf.PdfPrintAdapter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.xpdfviewer.data.AddBookmarkDialogState
 import com.xpdfviewer.data.AppTab
+import com.xpdfviewer.data.DocumentFormState
+import com.xpdfviewer.data.FormFieldItem
+import com.xpdfviewer.data.OutlineNode
+import com.xpdfviewer.data.OutlineTab
 import com.xpdfviewer.data.PageDimensions
 import com.xpdfviewer.data.PageModificationType
+import com.xpdfviewer.data.PageSpatialData
+import com.xpdfviewer.data.PdfSearchState
 import com.xpdfviewer.data.PdfViewerUiState
 import com.xpdfviewer.data.PendingPageAction
 import com.xpdfviewer.data.RecentDocument
 import com.xpdfviewer.data.RecentDocumentsRepository
+import com.xpdfviewer.data.ReadingMode
+import com.xpdfviewer.data.SearchMatch
+import com.xpdfviewer.data.UserBookmark
+import com.xpdfviewer.pdf.PdfOutlineExtractor
 import com.xpdfviewer.pdf.PdfRendererCore
+import com.xpdfviewer.pdf.PdfSearchEngine
 import com.xpdfviewer.pdf.PdfTextExtractor
+import com.xpdfviewer.pdf.SpatialTextExtractor
+import com.xpdfviewer.speech.TextToSpeechManager
+import java.util.UUID
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,11 +53,15 @@ class PdfViewerViewModel : ViewModel() {
 
     private var pdfRenderer: PdfRendererCore? = null
     private var recentRepository: RecentDocumentsRepository? = null
+    private var ttsManager: TextToSpeechManager? = null
+    private var searchJob: Job? = null
 
     fun initialize(context: Context) {
         if (recentRepository == null) {
             recentRepository = RecentDocumentsRepository(context.applicationContext)
             loadRecentDocuments()
+            val savedReadingMode = recentRepository?.getSavedReadingMode() ?: ReadingMode.DEFAULT
+            _uiState.update { it.copy(readingMode = savedReadingMode) }
         }
     }
 
@@ -53,6 +75,8 @@ class PdfViewerViewModel : ViewModel() {
     }
 
     fun closeDocument() {
+        searchJob?.cancel()
+        searchJob = null
         pdfRenderer?.close()
         pdfRenderer = null
         _uiState.update {
@@ -70,9 +94,21 @@ class PdfViewerViewModel : ViewModel() {
                 pendingPageAction = null,
                 onScreenSelectPageIndex = null,
                 onScreenSelectText = "",
-                isExtractingOnScreenText = false
+                onScreenSpatialData = null,
+                selectedWordIndices = emptySet(),
+                selectedWordText = "",
+                isExtractingOnScreenText = false,
+                isTtsSpeaking = false,
+                outlineNodes = emptyList(),
+                userBookmarks = emptyList(),
+                showOutlineSheet = false,
+                isOutlineLoading = false,
+                addBookmarkDialogState = AddBookmarkDialogState(),
+                searchState = PdfSearchState(),
+                formState = DocumentFormState()
             )
         }
+        stopSpeaking()
         loadRecentDocuments()
     }
 
@@ -80,6 +116,8 @@ class PdfViewerViewModel : ViewModel() {
         initialize(context)
 
         viewModelScope.launch {
+            searchJob?.cancel()
+            searchJob = null
             _uiState.update {
                 it.copy(
                     isLoading = true,
@@ -88,7 +126,13 @@ class PdfViewerViewModel : ViewModel() {
                     zoom = 1.0f,
                     currentPage = startPage,
                     showTextSheet = false,
-                    extractedText = ""
+                    extractedText = "",
+                    outlineNodes = emptyList(),
+                    userBookmarks = emptyList(),
+                    showOutlineSheet = false,
+                    isOutlineLoading = true,
+                    searchState = PdfSearchState(),
+                    formState = DocumentFormState()
                 )
             }
 
@@ -126,6 +170,12 @@ class PdfViewerViewModel : ViewModel() {
                         errorMessage = null
                     )
                 }
+
+                // Asynchronously extract Table of Contents and load user bookmarks
+                loadOutlineAndBookmarks(context, uri)
+
+                // Asynchronously detect and parse interactive AcroForm fields
+                loadFormFields(context, uri)
             } else {
                 renderer.close()
                 pdfRenderer = null
@@ -266,28 +316,107 @@ class PdfViewerViewModel : ViewModel() {
             it.copy(
                 onScreenSelectPageIndex = pageIndex,
                 onScreenSelectText = "",
+                onScreenSpatialData = null,
+                selectedWordIndices = emptySet(),
+                selectedWordText = "",
                 isExtractingOnScreenText = true,
                 showTextSheet = false
             )
         }
 
         viewModelScope.launch {
-            val text = PdfTextExtractor.extractPageText(context.applicationContext, uri, pageIndex)
+            val spatialData = SpatialTextExtractor.extractSpatialText(context.applicationContext, uri, pageIndex)
+            val fallbackText = if (spatialData.fullText.isNotBlank()) spatialData.fullText else PdfTextExtractor.extractPageText(context.applicationContext, uri, pageIndex)
             _uiState.update {
                 it.copy(
                     isExtractingOnScreenText = false,
-                    onScreenSelectText = text
+                    onScreenSelectText = fallbackText,
+                    onScreenSpatialData = spatialData,
+                    selectedWordIndices = emptySet(),
+                    selectedWordText = ""
                 )
             }
         }
     }
 
+    fun selectWord(index: Int) {
+        val spatial = _uiState.value.onScreenSpatialData ?: return
+        if (index !in spatial.words.indices) return
+        val newSet = setOf(index)
+        val word = spatial.words[index]
+        _uiState.update {
+            it.copy(
+                selectedWordIndices = newSet,
+                selectedWordText = word.text
+            )
+        }
+    }
+
+    fun selectWordRange(startIndex: Int, endIndex: Int) {
+        val spatial = _uiState.value.onScreenSpatialData ?: return
+        if (spatial.words.isEmpty()) return
+        val low = minOf(startIndex, endIndex).coerceIn(0, spatial.words.lastIndex)
+        val high = maxOf(startIndex, endIndex).coerceIn(0, spatial.words.lastIndex)
+        val range = (low..high).toSet()
+        val text = spatial.words.filter { it.index in range }.joinToString(" ") { it.text }
+        _uiState.update {
+            it.copy(
+                selectedWordIndices = range,
+                selectedWordText = text
+            )
+        }
+    }
+
+    fun selectAllWords() {
+        val spatial = _uiState.value.onScreenSpatialData ?: return
+        val allIndices = spatial.words.indices.toSet()
+        _uiState.update {
+            it.copy(
+                selectedWordIndices = allIndices,
+                selectedWordText = spatial.fullText
+            )
+        }
+    }
+
+    fun clearWordSelection() {
+        stopSpeaking()
+        _uiState.update {
+            it.copy(
+                selectedWordIndices = emptySet(),
+                selectedWordText = ""
+            )
+        }
+    }
+
+    fun speakText(context: Context, text: String) {
+        if (text.isBlank()) return
+        val manager = ttsManager ?: TextToSpeechManager(context.applicationContext).also { newManager ->
+            ttsManager = newManager
+            viewModelScope.launch {
+                newManager.isSpeaking.collect { speaking ->
+                    _uiState.update { it.copy(isTtsSpeaking = speaking) }
+                }
+            }
+        }
+        manager.speak(text)
+    }
+
+    fun stopSpeaking() {
+        ttsManager?.stop()
+        _uiState.update { it.copy(isTtsSpeaking = false) }
+    }
+
     fun exitOnScreenTextSelection() {
+        stopSpeaking()
         _uiState.update {
             it.copy(
                 onScreenSelectPageIndex = null,
                 onScreenSelectText = "",
-                isExtractingOnScreenText = false
+                onScreenSpatialData = null,
+                selectedWordIndices = emptySet(),
+                selectedWordText = "",
+                isExtractingOnScreenText = false,
+                isTtsSpeaking = false
             )
         }
     }
@@ -644,9 +773,401 @@ class PdfViewerViewModel : ViewModel() {
         return RecentDocument.resolveDisplayPath(uri, fallbackName)
     }
 
+    // region Outline & Bookmarks
+
+    fun loadOutlineAndBookmarks(context: Context, uri: Uri) {
+        val uriString = uri.toString()
+        val cachedBookmarks = recentRepository?.getUserBookmarks(uriString) ?: emptyList()
+        _uiState.update {
+            it.copy(
+                userBookmarks = cachedBookmarks,
+                isOutlineLoading = true
+            )
+        }
+
+        viewModelScope.launch {
+            val nodes = PdfOutlineExtractor.extractOutline(context, uri)
+            _uiState.update {
+                it.copy(
+                    outlineNodes = nodes,
+                    isOutlineLoading = false
+                )
+            }
+        }
+    }
+
+    fun openOutlineSheet(tab: OutlineTab = OutlineTab.CONTENTS) {
+        _uiState.update {
+            it.copy(
+                showOutlineSheet = true,
+                selectedOutlineTab = tab
+            )
+        }
+    }
+
+    fun closeOutlineSheet() {
+        _uiState.update {
+            it.copy(showOutlineSheet = false)
+        }
+    }
+
+    fun selectOutlineTab(tab: OutlineTab) {
+        _uiState.update {
+            it.copy(selectedOutlineTab = tab)
+        }
+    }
+
+    fun toggleCurrentPageBookmark() {
+        val state = _uiState.value
+        val activeIndex = state.currentPage - 1
+        val existingBookmark = state.userBookmarks.firstOrNull { it.pageIndex == activeIndex }
+
+        if (existingBookmark != null) {
+            // Open dialog in edit/delete mode for existing bookmark
+            _uiState.update {
+                it.copy(
+                    addBookmarkDialogState = AddBookmarkDialogState(
+                        isOpen = true,
+                        targetPageIndex = activeIndex,
+                        initialTitle = existingBookmark.title,
+                        initialNote = existingBookmark.note,
+                        existingBookmarkId = existingBookmark.id
+                    )
+                )
+            }
+        } else {
+            // Open dialog to add new bookmark
+            _uiState.update {
+                it.copy(
+                    addBookmarkDialogState = AddBookmarkDialogState(
+                        isOpen = true,
+                        targetPageIndex = activeIndex,
+                        initialTitle = "Page ${state.currentPage}",
+                        initialNote = "",
+                        existingBookmarkId = null
+                    )
+                )
+            }
+        }
+    }
+
+    fun openAddBookmarkDialog(pageIndex: Int) {
+        val state = _uiState.value
+        val existingBookmark = state.userBookmarks.firstOrNull { it.pageIndex == pageIndex }
+
+        _uiState.update {
+            it.copy(
+                addBookmarkDialogState = AddBookmarkDialogState(
+                    isOpen = true,
+                    targetPageIndex = pageIndex,
+                    initialTitle = existingBookmark?.title ?: "Page ${pageIndex + 1}",
+                    initialNote = existingBookmark?.note ?: "",
+                    existingBookmarkId = existingBookmark?.id
+                )
+            )
+        }
+    }
+
+    fun closeAddBookmarkDialog() {
+        _uiState.update {
+            it.copy(addBookmarkDialogState = AddBookmarkDialogState(isOpen = false))
+        }
+    }
+
+    fun saveBookmark(pageIndex: Int, title: String, note: String, existingId: String? = null) {
+        val uri = _uiState.value.uri ?: return
+        val uriString = uri.toString()
+        val bookmark = UserBookmark(
+            id = existingId ?: UUID.randomUUID().toString(),
+            uriString = uriString,
+            pageIndex = pageIndex,
+            title = title.ifBlank { "Page ${pageIndex + 1}" },
+            note = note.trim()
+        )
+        recentRepository?.saveBookmark(bookmark)
+        val updated = recentRepository?.getUserBookmarks(uriString) ?: emptyList()
+        _uiState.update {
+            it.copy(
+                userBookmarks = updated,
+                addBookmarkDialogState = AddBookmarkDialogState(isOpen = false)
+            )
+        }
+    }
+
+    fun deleteBookmark(bookmarkId: String) {
+        val uri = _uiState.value.uri ?: return
+        val uriString = uri.toString()
+        recentRepository?.deleteBookmark(bookmarkId)
+        val updated = recentRepository?.getUserBookmarks(uriString) ?: emptyList()
+        _uiState.update {
+            it.copy(
+                userBookmarks = updated,
+                addBookmarkDialogState = AddBookmarkDialogState(isOpen = false)
+            )
+        }
+    }
+
+    fun jumpToOutlinePage(pageIndex: Int) {
+        val pageCount = _uiState.value.pageCount
+        if (pageIndex in 0 until pageCount) {
+            updateCurrentPage(pageIndex + 1)
+        }
+        closeOutlineSheet()
+    }
+
+    // endregion
+
+    // region In-Document Full-Text Search
+
+    fun openSearch() {
+        _uiState.update {
+            it.copy(
+                searchState = it.searchState.copy(
+                    isSearchActive = true
+                )
+            )
+        }
+    }
+
+    fun closeSearch() {
+        searchJob?.cancel()
+        searchJob = null
+        _uiState.update {
+            it.copy(
+                searchState = PdfSearchState(isSearchActive = false)
+            )
+        }
+    }
+
+    fun updateSearchQuery(context: Context, query: String) {
+        val uri = _uiState.value.uri ?: return
+        val pageCount = _uiState.value.pageCount
+        if (pageCount <= 0) return
+
+        searchJob?.cancel()
+
+        _uiState.update {
+            it.copy(
+                searchState = it.searchState.copy(
+                    query = query,
+                    isSearching = query.isNotBlank(),
+                    matches = if (query.isBlank()) emptyList() else it.searchState.matches,
+                    currentMatchIndex = if (query.isBlank()) -1 else it.searchState.currentMatchIndex
+                )
+            )
+        }
+
+        if (query.isBlank()) {
+            return
+        }
+
+        searchJob = viewModelScope.launch {
+            delay(300) // Debounce rapid typing
+            PdfSearchEngine.searchDocument(
+                context = context,
+                uri = uri,
+                pageCount = pageCount,
+                query = query
+            ) { updatedMatches, isComplete ->
+                _uiState.update { current ->
+                    val newCurrentIndex = if (updatedMatches.isEmpty()) {
+                        -1
+                    } else if (current.searchState.currentMatchIndex in updatedMatches.indices) {
+                        current.searchState.currentMatchIndex
+                    } else {
+                        0
+                    }
+
+                    current.copy(
+                        searchState = current.searchState.copy(
+                            isSearching = !isComplete,
+                            matches = updatedMatches,
+                            currentMatchIndex = newCurrentIndex
+                        )
+                    )
+                }
+
+                // If a match is active, sync page
+                val targetMatch = _uiState.value.searchState.currentMatch
+                if (targetMatch != null) {
+                    val targetPage = targetMatch.displayPage
+                    if (_uiState.value.currentPage != targetPage) {
+                        updateCurrentPage(targetPage)
+                    }
+                }
+            }
+        }
+    }
+
+    fun nextSearchMatch() {
+        val state = _uiState.value.searchState
+        if (!state.hasMatches) return
+
+        val nextIndex = (state.currentMatchIndex + 1) % state.totalMatches
+        _uiState.update {
+            it.copy(
+                searchState = it.searchState.copy(currentMatchIndex = nextIndex)
+            )
+        }
+        val targetMatch = _uiState.value.searchState.currentMatch
+        if (targetMatch != null) {
+            updateCurrentPage(targetMatch.displayPage)
+        }
+    }
+
+    fun previousSearchMatch() {
+        val state = _uiState.value.searchState
+        if (!state.hasMatches) return
+
+        val prevIndex = if (state.currentMatchIndex - 1 < 0) {
+            state.totalMatches - 1
+        } else {
+            state.currentMatchIndex - 1
+        }
+        _uiState.update {
+            it.copy(
+                searchState = it.searchState.copy(currentMatchIndex = prevIndex)
+            )
+        }
+        val targetMatch = _uiState.value.searchState.currentMatch
+        if (targetMatch != null) {
+            updateCurrentPage(targetMatch.displayPage)
+        }
+    }
+
+    // endregion
+
+    // region Reading Mode & Eye Comfort
+
+    fun openReadingModeSheet() {
+        _uiState.update { it.copy(showReadingModeSheet = true) }
+    }
+
+    fun closeReadingModeSheet() {
+        _uiState.update { it.copy(showReadingModeSheet = false) }
+    }
+
+    fun selectReadingMode(mode: ReadingMode) {
+        recentRepository?.saveReadingMode(mode)
+        _uiState.update {
+            it.copy(
+                readingMode = mode,
+                showReadingModeSheet = false
+            )
+        }
+    }
+
+    // endregion
+
+    // region Interactive Form Fields (AcroForm)
+
+    fun loadFormFields(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            val fields = PdfFormManager.extractFormFields(context, uri)
+            _uiState.update {
+                it.copy(
+                    formState = DocumentFormState(
+                        hasAcroForm = fields.isNotEmpty(),
+                        isFormEditable = true,
+                        fields = fields
+                    )
+                )
+            }
+        }
+    }
+
+    fun updateFormFieldValue(fieldId: String, newValue: String) {
+        _uiState.update { state ->
+            val updatedFields = state.formState.fields.map { field ->
+                if (field.id == fieldId) field.copy(currentValue = newValue) else field
+            }
+            state.copy(
+                formState = state.formState.copy(
+                    fields = updatedFields,
+                    hasUnsavedChanges = true
+                )
+            )
+        }
+    }
+
+    fun updateCheckboxField(fieldId: String, isChecked: Boolean) {
+        _uiState.update { state ->
+            val updatedFields = state.formState.fields.map { field ->
+                if (field.id == fieldId) field.copy(isChecked = isChecked, currentValue = if (isChecked) "Yes" else "No") else field
+            }
+            state.copy(
+                formState = state.formState.copy(
+                    fields = updatedFields,
+                    hasUnsavedChanges = true
+                )
+            )
+        }
+    }
+
+    fun clearAllFormFields() {
+        _uiState.update { state ->
+            val resetFields = state.formState.fields.map { field ->
+                field.copy(currentValue = "", isChecked = false)
+            }
+            state.copy(
+                formState = state.formState.copy(
+                    fields = resetFields,
+                    hasUnsavedChanges = true
+                )
+            )
+        }
+    }
+
+    fun setFormSheetVisible(visible: Boolean) {
+        _uiState.update { it.copy(formState = it.formState.copy(showFormSheet = visible)) }
+    }
+
+    fun setFormSaveChoiceDialogVisible(visible: Boolean) {
+        _uiState.update { it.copy(formState = it.formState.copy(showSaveChoiceDialog = visible)) }
+    }
+
+    fun onFormFieldClicked(field: FormFieldItem) {
+        _uiState.update { it.copy(formState = it.formState.copy(editingField = field, activeFieldId = field.id)) }
+    }
+
+    fun dismissEditingField() {
+        _uiState.update { it.copy(formState = it.formState.copy(editingField = null)) }
+    }
+
+    fun saveFormToDestination(
+        context: Context,
+        destinationUri: Uri,
+        flatten: Boolean,
+        onComplete: () -> Unit = {}
+    ) {
+        val srcUri = _uiState.value.uri ?: return
+        val fields = _uiState.value.formState.fields
+        viewModelScope.launch {
+            _uiState.update { it.copy(formState = it.formState.copy(isSaving = true)) }
+            val success = PdfFormManager.saveFormDocument(context, srcUri, destinationUri, fields, flatten)
+            _uiState.update {
+                it.copy(
+                    formState = it.formState.copy(
+                        isSaving = false,
+                        hasUnsavedChanges = if (success) false else it.formState.hasUnsavedChanges
+                    )
+                )
+            }
+            if (success) {
+                onComplete()
+            }
+        }
+    }
+
+    // endregion
+
     override fun onCleared() {
         super.onCleared()
+        searchJob?.cancel()
+        searchJob = null
         pdfRenderer?.close()
         pdfRenderer = null
+        ttsManager?.shutdown()
+        ttsManager = null
     }
 }

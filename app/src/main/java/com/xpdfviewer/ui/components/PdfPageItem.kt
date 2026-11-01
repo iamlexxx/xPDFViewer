@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -122,97 +125,128 @@ fun PdfPageItem(
                     .aspectRatio(aspectRatio)
             }
 
-            if (isSelectionMode) {
-                // Live On-Screen Text Selection Canvas (Matches native text selection with handles & floating menu)
-                Surface(
-                    modifier = pageModifier
-                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(4.dp))
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = Color.White
-                ) {
+            // Rendered PDF Page Canvas (Bitmap always visible)
+            Box(
+                modifier = pageModifier
+                    .shadow(elevation = if (isSelectionMode) 5.dp else 3.dp, shape = RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(uiState.readingMode.cardBackgroundColor)
+                    .then(
+                        if (!isSelectionMode) {
+                            Modifier.pointerInput(pageIndex) {
+                                detectTapGestures(
+                                    onLongPress = {
+                                        onLongPress()
+                                    }
+                                )
+                            }
+                        } else {
+                            Modifier
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                val bmp = pageBitmap
+                if (bmp != null && !bmp.isRecycled) {
+                    Image(
+                        bitmap = bmp.asImageBitmap(),
+                        contentDescription = "Page ${pageIndex + 1}",
+                        contentScale = ContentScale.Fit,
+                        colorFilter = uiState.readingMode.composeColorFilter,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp
+                    )
+                }
+
+                // Spatial Text Overlay when in selection mode
+                if (isSelectionMode) {
+                    val spatialData = uiState.onScreenSpatialData
                     when {
                         uiState.isExtractingOnScreenText -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = Color.Black.copy(alpha = 0.65f),
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 16.dp)
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                                ) {
                                     CircularProgressIndicator(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        strokeWidth = 2.5.dp
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(16.dp)
                                     )
-                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "Extracting text...",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = "Extracting text layer...",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White
                                     )
                                 }
                             }
                         }
-                        uiState.onScreenSelectText.isBlank() -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No selectable text found on Page ${pageIndex + 1}.",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
+                        spatialData != null && !spatialData.isEmpty -> {
+                            PdfTextOverlayCanvas(
+                                spatialData = spatialData,
+                                selectedIndices = uiState.selectedWordIndices,
+                                onWordTap = { viewModel.selectWord(it) },
+                                onWordRangeSelect = { s, e -> viewModel.selectWordRange(s, e) },
+                                onClearSelection = { viewModel.clearWordSelection() },
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
-                        else -> {
-                            SelectionContainer(
+                        spatialData != null && spatialData.isEmpty -> {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f),
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(horizontal = 20.dp, vertical = 18.dp)
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 16.dp)
                             ) {
                                 Text(
-                                    text = uiState.onScreenSelectText,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontSize = if (isLandscape) 14.sp else 15.sp,
-                                        lineHeight = if (isLandscape) 22.sp else 24.sp,
-                                        fontFamily = FontFamily.Default
-                                    ),
-                                    color = Color(0xFF1D1B20)
+                                    text = "No selectable text on Page ${pageIndex + 1} (scanned document)",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
                             }
                         }
                     }
                 }
-            } else {
-                // Normal Rendered PDF Page Canvas
-                Box(
-                    modifier = pageModifier
-                        .shadow(elevation = 3.dp, shape = RoundedCornerShape(4.dp))
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color.White)
-                        .pointerInput(pageIndex) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    onLongPress()
-                                }
-                            )
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    val bmp = pageBitmap
-                    if (bmp != null && !bmp.isRecycled) {
-                        Image(
-                            bitmap = bmp.asImageBitmap(),
-                            contentDescription = "Page ${pageIndex + 1}",
-                            contentScale = ContentScale.Fit,
+
+                // Search Matches Highlight Overlay
+                if (uiState.searchState.isSearchActive && uiState.searchState.hasMatches) {
+                    val pageMatches = remember(uiState.searchState.matches, pageIndex) {
+                        uiState.searchState.matches.filter { it.pageIndex == pageIndex }
+                    }
+                    if (pageMatches.isNotEmpty()) {
+                        PdfSearchHighlightCanvas(
+                            matches = pageMatches,
+                            currentMatchIndex = uiState.searchState.currentMatchIndex,
                             modifier = Modifier.fillMaxSize()
                         )
-                    } else {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = 2.dp
+                    }
+                }
+
+                // Interactive Form Fields Overlay
+                if (uiState.formState.hasAcroForm && !isSelectionMode) {
+                    val pageFields = remember(uiState.formState.fields, pageIndex) {
+                        uiState.formState.fields.filter { it.pageIndex == pageIndex }
+                    }
+                    if (pageFields.isNotEmpty()) {
+                        PdfFormOverlayCanvas(
+                            fields = pageFields,
+                            activeFieldId = uiState.formState.activeFieldId,
+                            onFieldClick = { field -> viewModel.onFormFieldClicked(field) },
+                            onToggleCheckbox = { fieldId, isChecked -> viewModel.updateCheckboxField(fieldId, isChecked) },
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }

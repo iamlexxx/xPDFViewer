@@ -65,14 +65,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xpdfviewer.ui.components.DeletePageDialog
+import com.xpdfviewer.ui.components.DocumentOutlineSheet
 import com.xpdfviewer.ui.components.ExtractPageDialog
+import com.xpdfviewer.ui.components.FloatingTextToolbar
+import com.xpdfviewer.ui.components.FormActionsBar
+import com.xpdfviewer.ui.components.FormFieldsBottomSheet
 import com.xpdfviewer.ui.components.JumpToPageDialog
 import com.xpdfviewer.ui.components.PageActionsBottomSheet
 import com.xpdfviewer.ui.components.PdfPageItem
 import com.xpdfviewer.ui.components.PdfTopBar
+import com.xpdfviewer.ui.components.ReadingModeBottomSheet
 import com.xpdfviewer.ui.components.SaveChoiceDialog
 import com.xpdfviewer.ui.components.ZoomableBox
+import com.xpdfviewer.ui.dialogs.AddEditBookmarkDialog
+import com.xpdfviewer.ui.dialogs.EditFormFieldDialog
+import com.xpdfviewer.ui.dialogs.FormSaveChoiceDialog
+import com.xpdfviewer.viewmodel.PageOrganizerViewModel
 import com.xpdfviewer.viewmodel.PdfViewerViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -100,6 +110,16 @@ fun PdfViewerScreen(
         }
     }
 
+    var pendingFormFlatten by remember { mutableStateOf(false) }
+
+    val saveFormLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { destinationUri ->
+        if (destinationUri != null) {
+            viewModel.saveFormToDestination(context, destinationUri, flatten = pendingFormFlatten)
+        }
+    }
+
     val pickPdfToInsertLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { insertUri ->
@@ -114,13 +134,30 @@ fun PdfViewerScreen(
     )
 
     var isSignPdfOpen by remember { mutableStateOf(false) }
+    var isPageOrganizerOpen by remember { mutableStateOf(false) }
+    val pageOrganizerViewModel: PageOrganizerViewModel = viewModel()
 
-    // Hardware back navigation returns to library view or exits text selection
-    BackHandler(enabled = uiState.uri != null && !isSignPdfOpen) {
-        if (uiState.onScreenSelectPageIndex != null) {
+    // Hardware back navigation returns to library view or exits text selection / search
+    BackHandler(enabled = uiState.uri != null && !isSignPdfOpen && !isPageOrganizerOpen) {
+        if (uiState.searchState.isSearchActive) {
+            viewModel.closeSearch()
+        } else if (uiState.onScreenSelectPageIndex != null) {
             viewModel.exitOnScreenTextSelection()
         } else {
             viewModel.closeDocument()
+        }
+    }
+
+    // Scroll to page when active search match changes
+    LaunchedEffect(uiState.searchState.currentMatchIndex) {
+        val targetMatch = uiState.searchState.currentMatch
+        if (targetMatch != null) {
+            val pageIdx = targetMatch.pageIndex
+            if (isLandscape) {
+                pagerState.animateScrollToPage(pageIdx)
+            } else {
+                listState.animateScrollToItem(pageIdx)
+            }
         }
     }
 
@@ -291,9 +328,9 @@ fun PdfViewerScreen(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
-                                            text = "Drag handles to select text",
+                                            text = if (uiState.selectedWordCount > 0) "${uiState.selectedWordCount} words selected" else "Tap or drag to select text",
                                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = if (uiState.selectedWordCount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
@@ -334,57 +371,115 @@ fun PdfViewerScreen(
                             isVisible = true,
                             onOpenJumpDialog = { viewModel.showJumpDialog(true) },
                             onCloseDocument = { viewModel.closeDocument() },
-                            onPrintDocument = { viewModel.printDocument(context) }
+                            onPrintDocument = { viewModel.printDocument(context) },
+                            onOpenPageOrganizer = { isPageOrganizerOpen = true },
+                            isCurrentPageBookmarked = uiState.isCurrentPageBookmarked,
+                            onToggleBookmark = { viewModel.toggleCurrentPageBookmark() },
+                            onOpenOutline = { viewModel.openOutlineSheet() },
+                            searchState = uiState.searchState,
+                            onOpenSearch = { viewModel.openSearch() },
+                            onCloseSearch = { viewModel.closeSearch() },
+                            onSearchQueryChange = { query -> viewModel.updateSearchQuery(context, query) },
+                            onPreviousSearchMatch = { viewModel.previousSearchMatch() },
+                            onNextSearchMatch = { viewModel.nextSearchMatch() },
+                            readingMode = uiState.readingMode,
+                            onOpenReadingMode = { viewModel.openReadingModeSheet() },
+                            hasAcroForm = uiState.formState.hasAcroForm,
+                            onOpenFormSheet = { viewModel.setFormSheetVisible(true) }
                         )
                     }
 
                     val isSelectionActive = uiState.onScreenSelectPageIndex != null
+                    val viewportBg = uiState.readingMode.viewportBackgroundColor ?: MaterialTheme.colorScheme.background
 
                     // PDF Viewport container positioned strictly below TopBar
-                    ZoomableBox(
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxWidth(),
-                        onTap = {}
-                    ) { currentScale ->
-                        if (isLandscape) {
-                            // Landscape Mode: HorizontalPager (scroll disabled during text handle dragging)
-                            HorizontalPager(
-                                state = pagerState,
-                                userScrollEnabled = !isSelectionActive && currentScale <= 1.05f,
-                                modifier = Modifier.fillMaxSize()
-                            ) { pageIndex ->
-                                PdfPageItem(
-                                    pageIndex = pageIndex,
-                                    viewModel = viewModel,
-                                    isLandscape = true,
-                                    onLongPress = {
-                                        viewModel.openPageActions(pageIndex)
-                                    }
-                                )
-                            }
-                        } else {
-                            // Portrait Mode: Continuous vertical scroll (scroll disabled during text handle dragging)
-                            LazyColumn(
-                                state = listState,
-                                userScrollEnabled = !isSelectionActive && currentScale <= 1.05f,
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp)
-                            ) {
-                                items(
-                                    count = uiState.pageCount,
-                                    key = { pageIndex -> pageIndex }
+                            .fillMaxWidth()
+                            .background(viewportBg)
+                    ) {
+                        ZoomableBox(
+                            modifier = Modifier.fillMaxSize(),
+                            onTap = {}
+                        ) { currentScale ->
+                            if (isLandscape) {
+                                // Landscape Mode: HorizontalPager (scroll disabled during text handle dragging)
+                                HorizontalPager(
+                                    state = pagerState,
+                                    userScrollEnabled = !isSelectionActive && currentScale <= 1.05f,
+                                    modifier = Modifier.fillMaxSize()
                                 ) { pageIndex ->
                                     PdfPageItem(
                                         pageIndex = pageIndex,
                                         viewModel = viewModel,
-                                        isLandscape = false,
+                                        isLandscape = true,
                                         onLongPress = {
                                             viewModel.openPageActions(pageIndex)
                                         }
                                     )
                                 }
+                            } else {
+                                // Portrait Mode: Continuous vertical scroll (scroll disabled during text handle dragging)
+                                LazyColumn(
+                                    state = listState,
+                                    userScrollEnabled = !isSelectionActive && currentScale <= 1.05f,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp)
+                                ) {
+                                    items(
+                                        count = uiState.pageCount,
+                                        key = { pageIndex -> pageIndex }
+                                    ) { pageIndex ->
+                                        PdfPageItem(
+                                            pageIndex = pageIndex,
+                                            viewModel = viewModel,
+                                            isLandscape = false,
+                                            onLongPress = {
+                                                viewModel.openPageActions(pageIndex)
+                                            }
+                                        )
+                                    }
+                                }
                             }
+                        }
+
+                        // Floating Text Action Toolbar (Copy, Share, Web Search, Speak)
+                        if (isSelectionActive) {
+                            FloatingTextToolbar(
+                                selectedText = uiState.selectedWordText,
+                                wordCount = uiState.selectedWordCount,
+                                isSpeaking = uiState.isTtsSpeaking,
+                                onCopy = {
+                                    viewModel.copyToClipboard(context, uiState.selectedWordText, "Selected Text")
+                                },
+                                onSelectAll = { viewModel.selectAllWords() },
+                                onSpeakToggle = {
+                                    if (uiState.isTtsSpeaking) {
+                                        viewModel.stopSpeaking()
+                                    } else {
+                                        viewModel.speakText(context, uiState.selectedWordText)
+                                    }
+                                },
+                                onDismiss = { viewModel.clearWordSelection() },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .navigationBarsPadding()
+                                    .padding(bottom = 16.dp)
+                            )
+                        }
+
+                        // Floating Form Actions Bar (Fill Form, Save/Flatten)
+                        if (!isSelectionActive && uiState.formState.hasAcroForm) {
+                            FormActionsBar(
+                                formState = uiState.formState,
+                                onOpenFormSheet = { viewModel.setFormSheetVisible(true) },
+                                onOpenSaveDialog = { viewModel.setFormSaveChoiceDialogVisible(true) },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .navigationBarsPadding()
+                                    .padding(bottom = 16.dp)
+                            )
                         }
                     }
                 }
@@ -432,6 +527,10 @@ fun PdfViewerScreen(
                 onAddSignature = {
                     viewModel.closePageActions()
                     isSignPdfOpen = true
+                },
+                onOrganizePages = {
+                    viewModel.closePageActions()
+                    isPageOrganizerOpen = true
                 },
                 onDismiss = {
                     viewModel.closePageActions()
@@ -511,6 +610,116 @@ fun PdfViewerScreen(
             }
         }
 
+        // Document Outline (Table of Contents) & User Bookmarks Bottom Sheet
+        if (uiState.showOutlineSheet) {
+            DocumentOutlineSheet(
+                showSheet = true,
+                outlineNodes = uiState.outlineNodes,
+                userBookmarks = uiState.userBookmarks,
+                selectedTab = uiState.selectedOutlineTab,
+                currentPage = uiState.currentPage,
+                fileName = uiState.fileName,
+                isLoading = uiState.isOutlineLoading,
+                onDismiss = { viewModel.closeOutlineSheet() },
+                onSelectTab = { viewModel.selectOutlineTab(it) },
+                onJumpToPage = { targetPageIndex ->
+                    viewModel.jumpToOutlinePage(targetPageIndex)
+                    coroutineScope.launch {
+                        if (isLandscape) {
+                            pagerState.animateScrollToPage(targetPageIndex)
+                        } else {
+                            listState.animateScrollToItem(targetPageIndex)
+                        }
+                    }
+                },
+                onAddBookmarkForCurrentPage = {
+                    viewModel.openAddBookmarkDialog(uiState.currentPage - 1)
+                },
+                onEditBookmark = { bookmark ->
+                    viewModel.openAddBookmarkDialog(bookmark.pageIndex)
+                },
+                onDeleteBookmark = { bookmarkId ->
+                    viewModel.deleteBookmark(bookmarkId)
+                }
+            )
+        }
+
+        // Add / Edit Bookmark Dialog
+        if (uiState.addBookmarkDialogState.isOpen) {
+            AddEditBookmarkDialog(
+                dialogState = uiState.addBookmarkDialogState,
+                onDismiss = { viewModel.closeAddBookmarkDialog() },
+                onSave = { pageIndex, title, note, existingId ->
+                    viewModel.saveBookmark(pageIndex, title, note, existingId)
+                },
+                onDelete = { bookmarkId ->
+                    viewModel.deleteBookmark(bookmarkId)
+                }
+            )
+        }
+
+        // Reading Mode & Eye Comfort Presets Bottom Sheet
+        if (uiState.showReadingModeSheet) {
+            ReadingModeBottomSheet(
+                showSheet = true,
+                currentMode = uiState.readingMode,
+                onSelectMode = { viewModel.selectReadingMode(it) },
+                onDismiss = { viewModel.closeReadingModeSheet() }
+            )
+        }
+
+        // Form Fields Bottom Sheet Assistant
+        if (uiState.formState.showFormSheet) {
+            FormFieldsBottomSheet(
+                formState = uiState.formState,
+                onDismiss = { viewModel.setFormSheetVisible(false) },
+                onUpdateTextField = { id, text -> viewModel.updateFormFieldValue(id, text) },
+                onToggleCheckbox = { id, isChecked -> viewModel.updateCheckboxField(id, isChecked) },
+                onSelectRadio = { id, opt -> viewModel.updateFormFieldValue(id, opt) },
+                onSelectChoice = { id, opt -> viewModel.updateFormFieldValue(id, opt) },
+                onJumpToPage = { targetPage ->
+                    coroutineScope.launch {
+                        val targetIndex = (targetPage - 1).coerceAtLeast(0)
+                        if (isLandscape) {
+                            pagerState.animateScrollToPage(targetIndex)
+                        } else {
+                            listState.animateScrollToItem(targetIndex)
+                        }
+                    }
+                },
+                onClearAllFields = { viewModel.clearAllFormFields() },
+                onOpenSaveDialog = { viewModel.setFormSaveChoiceDialogVisible(true) }
+            )
+        }
+
+        // Form Save Choice Dialog (Flattened vs Interactive)
+        if (uiState.formState.showSaveChoiceDialog) {
+            FormSaveChoiceDialog(
+                onDismiss = { viewModel.setFormSaveChoiceDialogVisible(false) },
+                onSaveFlattened = {
+                    pendingFormFlatten = true
+                    val baseName = uiState.fileName.substringBeforeLast(".pdf", uiState.fileName)
+                    saveFormLauncher.launch("${baseName}_flattened.pdf")
+                },
+                onSaveInteractive = {
+                    pendingFormFlatten = false
+                    val baseName = uiState.fileName.substringBeforeLast(".pdf", uiState.fileName)
+                    saveFormLauncher.launch("${baseName}_filled.pdf")
+                }
+            )
+        }
+
+        // Direct Field Tapping Edit Dialog
+        uiState.formState.editingField?.let { field ->
+            EditFormFieldDialog(
+                field = field,
+                onDismiss = { viewModel.dismissEditingField() },
+                onSaveValue = { newVal ->
+                    viewModel.updateFormFieldValue(field.id, newVal)
+                }
+            )
+        }
+
         // Full-screen animated overlay for E-Signature
         AnimatedVisibility(
             visible = isSignPdfOpen,
@@ -564,6 +773,64 @@ fun PdfViewerScreen(
                     },
                     initialPdfUri = uiState.uri,
                     initialPageIndex = uiState.pageActionsTargetIndex,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        // Fullscreen Visual Page Organizer Overlay
+        AnimatedVisibility(
+            visible = isPageOrganizerOpen,
+            enter = slideInVertically(
+                initialOffsetY = { (it * 0.28f).toInt() },
+                animationSpec = tween(
+                    durationMillis = 350,
+                    easing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f)
+                )
+            ) + fadeIn(
+                animationSpec = tween(
+                    durationMillis = 280,
+                    easing = LinearOutSlowInEasing
+                )
+            ) + scaleIn(
+                initialScale = 0.92f,
+                animationSpec = tween(
+                    durationMillis = 350,
+                    easing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f)
+                )
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { (it * 0.22f).toInt() },
+                animationSpec = tween(
+                    durationMillis = 240,
+                    easing = FastOutLinearInEasing
+                )
+            ) + fadeOut(
+                animationSpec = tween(
+                    durationMillis = 200,
+                    easing = FastOutLinearInEasing
+                )
+            ) + scaleOut(
+                targetScale = 0.94f,
+                animationSpec = tween(
+                    durationMillis = 240,
+                    easing = FastOutLinearInEasing
+                )
+            ),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                PageOrganizerScreen(
+                    viewModel = pageOrganizerViewModel,
+                    onNavigateBack = { isPageOrganizerOpen = false },
+                    onDocumentSaved = { savedUri ->
+                        isPageOrganizerOpen = false
+                        viewModel.loadPdf(context, savedUri)
+                    },
+                    initialPdfUri = uiState.uri,
                     modifier = Modifier.fillMaxSize()
                 )
             }

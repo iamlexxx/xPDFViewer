@@ -10,6 +10,7 @@ out/
 *.apk
 *.ap_
 *.aab
+*.apks
 
 # ==============================================================================
 # Gradle & Kotlin Compiler Caches
@@ -20,6 +21,7 @@ out/
 **/.kotlin/
 gradle-app.setting
 .gradletasknamecache
+.gradle-build-cache/
 
 # Preserve Gradle Wrapper Jar
 !gradle/wrapper/gradle-wrapper.jar
@@ -36,9 +38,11 @@ captures/
 output.json
 output-metadata.json
 
-# Profiling & Diagnostics
+# Profiling, Diagnostics & Logs
 *.hprof
 *.log
+*.heap
+*.dump
 
 # ==============================================================================
 # Android Studio / IntelliJ IDEA
@@ -48,12 +52,38 @@ output-metadata.json
 *.iml
 **/*.iml
 .idea_modules/
+*.ipr
+*.iws
+.shelf/
 
 # VS Code & Other Editors
 .vscode/
 **/.vscode/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# ==============================================================================
+# AI Assistants & Local Tooling
+# ==============================================================================
+.claude/
+.gemini/
+.cursor/
+.copilot/
+
+# ==============================================================================
+# Python & Script Caches (Assistant Skills & Automation)
+# ==============================================================================
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
 
 # ==============================================================================
 # Native (NDK / C++) Build Artifacts
@@ -63,9 +93,10 @@ output-metadata.json
 .externalNativeBuild/
 **/.externalNativeBuild/
 default.properties
+cmake-build-*/
 
 # ==============================================================================
-# Signing Keys & Certificates (Security)
+# Signing Keys, Keystores & Secrets (Security)
 # ==============================================================================
 *.jks
 *.keystore
@@ -73,7 +104,17 @@ default.properties
 *.key
 *.pepk
 *.p8
+*.pem
+*.cer
+*.crt
 google-services.json
+keystore.properties
+secrets.properties
+signing.properties
+*.secret
+.env
+.env.*
+!.env.example
 
 # ==============================================================================
 # OS-Specific Files

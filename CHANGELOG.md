@@ -7,6 +7,136 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.3] - 2026-11-01
+
+### Added
+- **Permanent PDF Redaction Tool (Standalone Offline Studio)**:
+  - Built comprehensive, privacy-first redaction suite (`PdfRedactionEngine.kt`, `RedactionModels.kt`, `PdfRedactionViewModel.kt`, `PdfRedactionScreen.kt`, `RedactionConfirmDialog.kt`, `RedactionSuccessDialog.kt`).
+  - **Vector Stream Blackout**:
+    - Converts normalized selection boundaries into native PDF coordinates (`MediaBox`/`CropBox`).
+    - Appends solid vector fill operations (`PDPageContentStream.addRect()`, `fill()`) with opaque `#000000` ink directly into content streams in `APPEND` mode.
+  - **Annotation Pruning**:
+    - Prunes overlapping `PDAnnotation` objects intersecting redaction areas.
+  - **Covert Metadata Scrubbing**:
+    - Purges all fields in `doc.documentInformation` (author, creator, keywords, title, producer).
+    - Strips embedded XMP catalog metadata stream (`doc.documentCatalog.metadata = null`).
+  - **Interactive Touch-Drag Selection Canvas**:
+    - Interactive touch gesture bounding box creation with real-time drag preview.
+    - Per-box deletion chips and active mark tracking.
+    - Multi-page keyword auto-search and batch auto-marking via `PdfSearchEngine.searchDocument`.
+  - **Tools Hub Integration**:
+    - Added "Redact PDF" grid card to `ToolsScreen.kt` under PDF Utilities with `Icons.Default.Security`.
+    - Integrated navigation via `ActiveToolScreen.REDACT_PDF` in `MainAppContainer.kt`.
+
+## [1.3.2] - 2026-11-01
+
+### Added
+- **Interactive Form Field Filler (AcroForm) & PDF Flattening Engine**:
+  - Built comprehensive, offline AcroForm inspection and form manipulation engine (`PdfFormManager.kt`, `PdfFormFieldModels.kt`, `PdfFormOverlayCanvas.kt`, `FormFieldsBottomSheet.kt`, `FormActionsBar.kt`, `EditFormFieldDialog.kt`, `FormSaveChoiceDialog.kt`).
+  - **AcroForm Inspection & Coordinate Mapping**:
+    - Recursively inspects `PDAcroForm.fields` hierarchy with widget annotation bounds translation to normalized top-left canvas coordinates (`NormalizedRect`).
+    - Full widget support for `PDTextField`, `PDCheckBox`, `PDRadioButton`, and `PDChoice` (combo/list boxes).
+  - **Interactive Canvas Overlay (`PdfFormOverlayCanvas.kt`)**:
+    - Direct touch layer rendered over `PdfPageItem.kt` with field bounding box highlights and focus indicators.
+    - Tap-to-toggle for checkboxes with vector checkmark rendering.
+    - Tap-to-edit modal for text, radio, and choice dropdowns (`EditFormFieldDialog.kt`).
+  - **Sequential Form Assistant Sheet (`FormFieldsBottomSheet.kt`)**:
+    - Page-grouped field list with completion percentage progress indicator.
+    - Jump-to-page navigation for immediate viewport focus.
+    - Clear All action to reset form entries.
+  - **Docked Control Deck (`FormActionsBar.kt`)**:
+    - Floating action banner showing live `X/Y Filled` counter.
+    - 1-tap trigger to open the assistant sheet or export dialog.
+  - **Dual Export Modes**:
+    - **Interactive Export**: Saves updated field values while preserving interactive AcroForm structure.
+    - **Flattened Export**: Invokes `acroForm.flatten()` to burn text and marks permanently into page content streams, locking entries against tampering for official submission.
+
+---
+
+## [1.3.1] - 2026-11-01
+
+### Added
+- **Split PDF Utility (Standalone Studio)**:
+  - Built dedicated offline PDF splitting and page extraction engine (`PdfSplitterEngine.kt`, `SplitPdfModels.kt`, `SplitPdfViewModel.kt`, `SplitPdfScreen.kt`, `SplitSuccessDialog.kt`).
+  - **Flexible Split Modes**:
+    - **Custom Range**: Free-form range expression parser supporting syntax like `"1-3, 5, 8-12"`, bounds validation, and clamping against total document pages.
+    - **Combine vs Separate**: Toggle switch to save custom ranges into a single extracted PDF or split each range segment into its own distinct file.
+    - **Fixed Interval (Equal Chunks)**: Stepper controls (- / +) and quick presets (2, 5, 10, 20 pages) to divide documents evenly every *N* pages.
+    - **Burst Pages**: Explodes entire PDF into individual single-page files (`{prefix}_part_1.pdf`, `{prefix}_part_2.pdf`).
+  - **Streaming SAF Directory & File Exporter**:
+    - Batch folder exports via Android Storage Access Framework (`ActivityResultContracts.OpenDocumentTree` and `DocumentsContract.createDocument`).
+    - Single-file export via `ActivityResultContracts.CreateDocument`.
+    - Sequential document segment generation with immediate `PDDocument.close()` preventing `OutOfMemoryError` on 500+ page documents.
+  - **Tools Hub Integration**:
+    - Added "Split PDF" grid card to `ToolsScreen.kt` under PDF Utilities with `Icons.AutoMirrored.Filled.CallSplit` and "Ready" badge.
+    - Registered `ActiveToolScreen.SPLIT_PDF` in `MainAppContainer.kt` with fluid animated entrance transition.
+  - **Visual Segment Preview Chips**:
+    - Real-time `FlowRow` preview displaying calculated segments, page counts, and output filenames prior to execution.
+  - **Split Completion & Viewer Navigation**:
+    - `SplitSuccessDialog.kt` showcasing created file count, file names preview, and instant "Open PDF" direct launch into the reader.
+
+---
+
+## [1.3.0] - 2026-11-01
+
+### Added
+- **Night Reading & Eye Comfort Modes**:
+  - Built zero-overhead, GPU-accelerated visual display filter pipeline (`ReadingMode.kt`, `ReadingModeBottomSheet.kt`).
+  - **5 Reading Presets**:
+    - **Original**: Standard document colors without alteration.
+    - **Night (Dark)**: Calibrated luminescence matrix mapping white paper to pleasant `#191919` dark charcoal and text to `#E1E1E1` soft white.
+    - **Warm Sepia**: Amber parchment tone filtering 26% of harsh blue-violet light.
+    - **High Contrast**: Dynamic contrast amplification clamping low values to deep black and boosting faint scanned text.
+    - **Grayscale**: Clean ITU-R BT.601 monochrome presentation.
+  - **Zero Overhead**: Applied via Compose `ColorFilter.colorMatrix` directly onto page rendering layer with 0ms latency and 60fps scrolling.
+  - **Coordinated Viewport & Card Canvas**: Viewport container and page card background colors dynamically match the active filter background to prevent white margin flashes.
+  - **Interactive Sheet & Top Bar Trigger**: Bottom sheet with live sample swatches and top-bar toggle (`Icons.Default.Palette`).
+  - **Cross-Session Memory**: Preference persisted in `SharedPreferences` via `RecentDocumentsRepository` across document reloads and app restarts.
+- **In-Document Full-Text Search Engine**:
+  - Built real-time, coroutine-powered full-text search suite (`PdfSearchEngine.kt`, `PdfSearchModels.kt`, `PdfSearchHighlightCanvas.kt`, `PdfSearchBar.kt`).
+  - **Spatial Word & Substring Matching**: Scans page text spatial layers, calculating exact character-to-word span overlaps and yielding coordinate-aligned normalized bounding boxes (`NormalizedRect`).
+  - **Progressive Streaming & Debounce**: Debounces queries (300ms) and yields matches progressively page-by-page off the main thread with coroutine cancellation (`ensureActive()`) on rapid keystrokes.
+  - **Animated Search Deck (`PdfSearchBar.kt`)**: Smooth transition replacing top bar with search query input, clear button, match occurrence chip (`3 of 18`), and directional cycling arrows (`▲` / `▼`).
+  - **Dual-Tone Canvas Highlighting (`PdfSearchHighlightCanvas.kt`)**: Paints translucent lemon yellow highlights over all matches on the page, with vibrant focused amber and solid border on the active match.
+  - **Orientation-Aware Viewport Auto-Scroll**: Automatically scrolls portrait (`LazyColumn`) and landscape (`HorizontalPager`) viewports to keep the active match centered.
+- **Document Outline (Table of Contents) & User Bookmarks**:
+  - Built comprehensive document navigation suite (`PdfOutlineExtractor.kt`, `DocumentOutlineSheet.kt`, `AddEditBookmarkDialog.kt`, `PdfOutlineModels.kt`).
+  - **Native Hierarchical Outline Parser (`PdfOutlineExtractor.kt`)**: Recursively traverses `PDDocumentCatalog.getDocumentOutline()` using PdfBox-Android, resolving multi-level chapter trees, nested subsections, and destination pages via `item.findDestinationPage(doc)` and `PDActionGoTo` mapping to 0-based page indices.
+  - **Expandable Tree Navigation Sheet (`DocumentOutlineSheet.kt`)**: Material 3 `ModalBottomSheet` featuring segmented tabs (**Contents** vs **Bookmarks**), level-based indentation, expandable/collapsible chevrons, chapter item count badges, active reading page highlights, and direct page jump chips (`p. 42`).
+  - **Persistent User Bookmarks (`RecentDocumentsRepository.kt`)**: JSON-serialized local storage for user bookmarks (`UserBookmark`) persisting custom titles, optional multi-line notes/annotations, and creation timestamps keyed by document URI across app sessions.
+  - **Top Bar Integration (`PdfTopBar.kt`)**: Added dedicated Table of Contents button (`Icons.AutoMirrored.Filled.MenuBook`) and dynamic active-page Bookmark toggle (`Bookmark` / `BookmarkBorder`) showing real-time bookmark status for the current visible page.
+  - **Add & Edit Bookmark Modal (`AddEditBookmarkDialog.kt`)**: Dialog allowing users to customize bookmark titles, add study notes, or delete pinned bookmarks.
+  - **Orientation-Aware Smooth Navigation**: Instant animated jumping to target pages across both portrait (`listState.animateScrollToItem`) and landscape (`pagerState.animateScrollToPage`).
+- **Standalone PDF Lock & Unlock Tool (PDF Security Studio)**:
+  - Built offline security suite (`PdfSecurityScreen.kt`, `PdfSecurityViewModel.kt`, `PdfSecurityManager.kt`, `SecuritySuccessDialog.kt`) accessible from the **Tools** tab under **PDF Utilities**.
+  - **Dual Operation Modes**: Single-tap switcher between **Protect (Lock)** and **Unlock (Decrypt)** with automated detection of incoming file encryption headers.
+  - **AES Encryption (128-bit & 256-bit)**: Encrypts documents with user passwords (required to view) and owner passwords via PdfBox `StandardProtectionPolicy`.
+  - **Granular Access Permissions (`AccessPermission`)**: Independent permission switches to allow or disallow printing, content extraction / copying, and annotations / form editing.
+  - **Password Removal & Decryption**: Validates credentials via `PDDocument.load(inputStream, password)` and strips all security dictionaries using `doc.setAllSecurityToBeRemoved(true)`.
+  - **Invalid Password Error Handling**: Explicitly catches `InvalidPasswordException` and presents actionable error banners.
+  - **Completion Sheet**: Integrated `SecuritySuccessDialog` offering direct "Open in Viewer" and native Android "Share PDF" intents.
+  - **Tools Navigation**: Added "Protect & Unlock" card with `Icons.Default.Lock` and **Ready** badge to `ToolsScreen.kt`, integrated into `MainAppContainer.kt` with fluid motion transitions.
+- **High-Fidelity Spatial Interactive Text Selection**:
+  - Replaced raw text replacement view with a coordinate-aligned transparent spatial text overlay (`PdfTextOverlayCanvas.kt`) that sits directly atop the rendered page bitmap without hiding original images, layouts, or fonts.
+  - **Glyph & Word Bounding Box Extractor (`SpatialTextExtractor.kt`)**: Subclasses PdfBox `PDFTextStripper` to capture `TextPosition` coordinates, normalizing user points into unit-space bounding rectangles (`NormalizedRect`, `SpatialWord`, `PageSpatialData`).
+  - **Tactile Touch Gestures & Selection Handles**: Tap to select words, drag across lines to select text ranges, with rounded blue highlight boxes and teardrop selection anchor handles.
+  - **Floating Action Toolbar (`FloatingTextToolbar.kt`)**: Contextual pill menu offering 1-tap **Copy**, **Share** (Android text share sheet), **Select All**, **Web Search** (`ACTION_WEB_SEARCH`), and **Read Aloud (TTS)**.
+  - **Offline Text-To-Speech (`TextToSpeechManager.kt`)**: Built lifecycle-safe speech engine streaming selected text directly to Android's built-in `TextToSpeech` with real-time speaking state and stop controls.
+  - **Scanned Document Awareness**: Detects pages with zero embedded text and displays a graceful alert informing users that the page is a scanned image.
+- **Visual Page Organizer & Grid Reordering Studio**:
+  - Built full-screen, edge-to-edge interactive thumbnail grid studio (`PageOrganizerScreen.kt`, `PageOrganizerViewModel.kt`, `OrganizerPageCard.kt`).
+  - **Thumbnail Grid View**: Renders responsive adaptive grid (`GridCells.Adaptive(minSize = 145.dp)`) of page thumbnail cards with exact native aspect ratios via `PdfRendererCore` and background LRU bitmap caching.
+  - **Quick Page Reordering**: Move pages earlier or later with quick sequential navigation buttons (`◀` / `▶`) with smooth Compose placement animations (`Modifier.animateItem()`).
+  - **Per-Page 90° Clockwise Rotation**: One-tap rotation chip on each page card with real-time hardware-accelerated preview rotation via `graphicsLayer { rotationZ = ... }`.
+  - **Rotate All Pages**: Global one-tap rotation action to quickly fix documents scanned sideways or upside down.
+  - **Multi-Selection Batch Actions**: Checkbox chips and selection mode enabling bulk extraction ("Extract (N)" into a new standalone PDF via SAF) and bulk deletion ("Delete (N)" with single-remaining-page safeguards).
+  - **Add Blank Page**: Dedicated button to insert clean blank pages directly into the document layout.
+  - **Backend Batch Reorganization Engine**: Added `PdfDocumentModifier.applyPageOrganization(...)` taking arbitrary page permutations, rotations, and blank pages, reconstructing the document cleanly with PdfBox `PDDocument.importPage` and streaming to SAF destinations.
+  - **Dual Save & Safe Discard Integration**: Integrated with `SaveChoiceDialog` ("Overwrite" vs "Save As Copy") and `DiscardChangesDialog` on back-navigation when unsaved edits are present.
+  - **Viewer Launch Points**: Added Page Organizer launcher icon (`Icons.Default.GridView`) to `PdfTopBar.kt` and "Organize pages" action item to the long-press `PageActionsBottomSheet.kt`.
+
+---
+
 ## [1.2.0] - 2026-10-18
 
 ### Changed & Enhanced

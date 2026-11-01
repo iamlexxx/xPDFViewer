@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.NoteAdd
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Draw
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.TextFields
@@ -51,6 +52,7 @@ fun PageActionsBottomSheet(
     onExtractPage: () -> Unit,
     onDeletePage: () -> Unit,
     onAddSignature: () -> Unit,
+    onOrganizePages: () -> Unit = {},
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -191,6 +193,18 @@ fun PageActionsBottomSheet(
                 iconBackgroundColor = Color(0xFFDCFCE7),
                 iconTint = Color(0xFF166534),
                 onClick = onAddSignature
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Option 6: Organize Pages
+            PageActionItem(
+                title = "Organize pages",
+                subtitle = "Reorder, rotate, or batch-manage document pages in grid view",
+                icon = Icons.Default.GridView,
+                iconBackgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
+                onClick = onOrganizePages
             )
 
             Spacer(modifier = Modifier.height(28.dp))

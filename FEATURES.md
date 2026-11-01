@@ -77,16 +77,29 @@ Long-press on PDF Page
 ## 3. Interactive Text Selection
 
 ### Overview
-Extracts and renders text layers on demand directly from the PDF document without cloud processing.
+High-fidelity, coordinate-aligned spatial text selection layer operating on demand directly over the rendered PDF page without replacing or obscuring the original visual document layout.
 
 ### Capabilities
-- **Local Text Extraction**: Uses PdfBox-Android (`PdfTextExtractor.kt`) to extract exact text content from the rendered page.
-- **Inset-Aware Top Bar**: Fixed header with `.statusBarsPadding()` and `shadowElevation = 8.dp` so system cutouts, clock, and battery icons never overlap the action bar.
-- **Live Search & Copy**: One-tap "Copy All Text" or selective drag selection with Android clipboard integration.
+- **Local Spatial Extraction (`SpatialTextExtractor.kt`)**: Subclasses PdfBox `PDFTextStripper` to extract exact glyph positions and word coordinates (`TextPosition`), calculating normalized bounding rectangles (`[0f..1f]`) for every discrete word on the page.
+- **On-Canvas Text Overlay (`PdfTextOverlayCanvas.kt`)**: Transparent touch layer drawn directly above the high-resolution page bitmap, rendering rounded highlight boxes (`Color(0xFF2563EB).copy(alpha = 0.35f)`) and draggable teardrop boundary handles.
+- **Natural Touch Gestures**: Tap individual words or drag across multiple lines to select full sentences and paragraphs.
+- **Floating Action Toolbar (`FloatingTextToolbar.kt`)**: Ergonomic floating pill menu offering:
+  - **Copy**: One-tap copy with haptic feedback.
+  - **Share**: System text share sheet dispatcher.
+  - **Select All**: Expands selection to cover all words on the active page.
+  - **Web Search**: Dispatches search intent directly to the default browser.
+  - **Read Aloud (TTS)**: Offline text-to-speech reading powered by `TextToSpeechManager.kt`.
+- **Inset-Aware Selection Header**: Top bar displaying live selection metrics (e.g., `42 words selected`), a "Copy All" shortcut, and a "Done" button.
+- **Scanned Document Awareness**: Detects pages with zero vector text and alerts users that the page is a scanned document.
 
 ### Key Classes
-- `PdfTextExtractor.kt` (`com.xpdfviewer.pdf`)
+- `SpatialTextExtractor.kt` (`com.xpdfviewer.pdf`)
+- `SpatialTextModels.kt` (`com.xpdfviewer.data`)
+- `PdfTextOverlayCanvas.kt` (`com.xpdfviewer.ui.components`)
+- `FloatingTextToolbar.kt` (`com.xpdfviewer.ui.components`)
+- `TextToSpeechManager.kt` (`com.xpdfviewer.speech`)
 - `PdfViewerScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `PdfPageItem.kt` (`com.xpdfviewer.ui.components`)
 
 ---
 
@@ -342,7 +355,175 @@ A fluid, native Material 3 motion system providing high-fidelity animated transi
 
 ---
 
-## 12. System Architecture & Permissions
+## 12. Visual Page Organizer & Grid Reordering Studio
+
+### Overview
+A full-screen, interactive document management studio accessible from the PDF Viewer's top bar or long-press contextual menu. Provides an adaptive grid of page thumbnail cards to reorder, rotate, delete, extract, or add pages in batch.
+
+### Capabilities
+- **Adaptive Thumbnail Grid**: Renders lightweight, aspect-ratio calibrated thumbnail cards via `PdfRendererCore` and background LRU caching across 2 to 4 responsive columns (`GridCells.Adaptive(minSize = 145.dp)`).
+- **Sequential Reordering**: Move pages earlier (`◀`) or later (`▶`) with smooth Compose placement animations (`Modifier.animateItem()`).
+- **Per-Page 90° Rotation**: Instant hardware-accelerated preview rotation via `graphicsLayer { rotationZ = ... }` and dictionary persistence.
+- **Rotate All Pages**: Global one-tap rotation action across all document pages.
+- **Multi-Selection Batch Actions**:
+  - **Extract (N)**: Exports selected pages into a new standalone PDF via SAF `CreateDocument`.
+  - **Delete (N)**: Removes selected pages from the document (safeguarded against deleting all pages).
+- **Add Blank Page**: Inserts clean A4 pages directly into the sequence.
+- **Batch Reorganization Engine**: `PdfDocumentModifier.applyPageOrganization(...)` reconstructs the document according to the specified page permutation and rotation array, writing directly to destination SAF content URIs.
+- **Dual Save & Safe Discard Integration**: Full support for `SaveChoiceDialog` (Overwrite vs Save as Copy) and `DiscardChangesDialog` on back-navigation.
+
+### Key Classes
+- `PageOrganizerScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `OrganizerPageCard.kt` (`com.xpdfviewer.ui.components`)
+- `PageOrganizerViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PageOrganizerUiState.kt` (`com.xpdfviewer.data`)
+- `PdfDocumentModifier.kt` (`com.xpdfviewer.pdf`)
+
+---
+
+## 13. Standalone PDF Lock & Unlock Tool
+
+### Overview
+A dedicated offline security utility in the **PDF Utilities** tab enabling users to protect any PDF document with passwords and granular access permissions, or strip password restrictions from documents for which they possess credentials.
+
+### Capabilities
+- **Dual Operating Modes**:
+  - **Protect Document**: Applies AES encryption with user (viewing) and owner (permission control) passwords.
+  - **Unlock Document**: Validates credentials against protected files, strips security dictionaries (`setAllSecurityToBeRemoved(true)`), and saves unencrypted copies.
+- **Enterprise-Grade AES Encryption**:
+  - Supports 128-bit AES (`StandardProtectionPolicy` length 128) and 256-bit AES (length 256) encryption standard.
+- **Granular Access Permissions (`AccessPermission`)**:
+  - **Allow Printing**: Controls document rasterization and printing privileges (`setCanPrint`).
+  - **Allow Content Extraction / Copy**: Enforces clipboard and text scraping restrictions (`setCanExtractContent`).
+  - **Allow Annotations & Form Fill**: Restricts digital markings, signatures, and form completion (`setCanModifyAnnotations`).
+  - **Allow Document Modifications**: Controls page restructuring, splitting, and merging (`setCanModify`).
+- **Smart Password Verification**:
+  - Secure credential validation using PdfBox-Android `PDDocument.load(stream, password)`.
+  - Automatic trapping of `com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException` with user-friendly error feedback.
+- **SAF Document Picker & Export**:
+  - Open file selection using Android's `OpenDocument` contract.
+  - Export destination routing via `CreateDocument("application/pdf")`.
+- **Completion Workflow (`SecuritySuccessDialog.kt`)**:
+  - Post-processing dialog providing one-tap **Open in Viewer** navigation and **Share PDF** via secure `FileProvider`.
+
+### Key Classes
+- `PdfSecurityScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `PdfSecurityViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfSecurityManager.kt` (`com.xpdfviewer.pdf`)
+- `PdfSecurityModels.kt` (`com.xpdfviewer.data`)
+- `SecuritySuccessDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `ToolsScreen.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 14. Document Outline (Table of Contents) & User Bookmarks
+
+### Overview
+A comprehensive document navigation system allowing users to explore the embedded hierarchical Table of Contents (PDF outline) and manage personal page bookmarks with custom titles and annotations.
+
+### Capabilities
+- **Native Hierarchical Outline Parsing (`PdfOutlineExtractor.kt`)**:
+  - Recursively traverses `PDDocumentCatalog.getDocumentOutline()` using PdfBox-Android.
+  - Resolves multi-level chapter titles, nested subsections, and destination pages via `item.findDestinationPage(doc)` and `PDActionGoTo` to 0-based page indices.
+  - Gracefully handles documents lacking embedded outlines with clean empty-state messaging and guidance to the Bookmarks tab.
+- **Dual-Tab Navigation Sheet (`DocumentOutlineSheet.kt`)**:
+  - Built with Material 3 `ModalBottomSheet` and segmented tabs: **Contents** and **Bookmarks**.
+  - **Contents View**: Expandable/collapsible chapter tree (`OutlineNode`), indentation proportional to hierarchy level, chevron toggles, active reading page highlighting, and 1-tap jump chips (`p. 42`).
+  - **Bookmarks View**: Comprehensive card-based list of user-created bookmarks showing page badge, custom title, optional note preview, and relative creation date.
+  - Quick action to "Bookmark Current Page (p. X)" directly from the sheet header.
+- **Persistent User Bookmarks (`RecentDocumentsRepository.kt`)**:
+  - Offline JSON storage in `SharedPreferences` keyed by document URI string.
+  - Persists custom bookmark labels, multiline notes, page indices, and timestamps across document reloads and application restarts.
+- **Top Bar Integration (`PdfTopBar.kt`)**:
+  - Dedicated **Document Outline** button (`Icons.AutoMirrored.Filled.MenuBook`) opening the navigation sheet.
+  - Dynamic **Bookmark Toggle** icon: shows filled `Icons.Default.Bookmark` in primary color if the current page is pinned; shows `Icons.Default.BookmarkBorder` if unpinned.
+- **Interactive Add/Edit Modal (`AddEditBookmarkDialog.kt`)**:
+  - Clean Material 3 dialog allowing users to edit titles, attach personal study notes, or delete existing bookmarks.
+- **Orientation-Aware Smooth Navigation**:
+  - Instant animated jumping to target pages across both portrait (`listState.animateScrollToItem`) and landscape (`pagerState.animateScrollToPage`).
+
+### Key Classes
+- `PdfOutlineExtractor.kt` (`com.xpdfviewer.pdf`)
+- `PdfOutlineModels.kt` (`com.xpdfviewer.data`)
+- `DocumentOutlineSheet.kt` (`com.xpdfviewer.ui.components`)
+- `AddEditBookmarkDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `PdfTopBar.kt` (`com.xpdfviewer.ui.components`)
+- `RecentDocumentsRepository.kt` (`com.xpdfviewer.data`)
+- `PdfViewerViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfViewerScreen.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 15. In-Document Full-Text Search Engine
+
+### Overview
+A real-time, interactive search deck that scans the entire PDF document, highlights matching terms and phrases with exact spatial bounding boxes directly on the page canvas, and offers bidirectional previous/next match cycling.
+
+### Capabilities
+- **Background Search Engine (`PdfSearchEngine.kt`)**:
+  - Scans document text layers page-by-page off the main thread (`Dispatchers.Default`).
+  - Resolves substring and phrase matches to word bounding boxes (`NormalizedRect`) with character-to-word span mapping.
+  - Progressively yields matches page-by-page as they are discovered so users see instant results on multi-hundred-page documents without waiting for complete indexing.
+  - Automatically cancels in-flight search jobs upon new keystrokes using Kotlin Coroutines (`ensureActive()`) with a 300ms debounce.
+- **Top Bar Search Deck (`PdfSearchBar.kt`)**:
+  - Seamlessly replaces standard top bar controls when active.
+  - Contains query `BasicTextField`, 1-tap query clear button, and `ImeAction.Search` integration.
+  - Live occurrence counter: displays `3 of 18`, `0 matches`, or `Searching...` progress indicator.
+  - Bidirectional navigation controls (`▲` Previous / `▼` Next) with automatic modulo wrap-around.
+- **Dual-Tone Canvas Highlighting (`PdfSearchHighlightCanvas.kt`)**:
+  - Placed directly inside `PdfPageItem.kt` above the rendered page bitmap.
+  - Highlights all matches on the page in translucent lemon yellow (`Color(0xFFFFEB3B).copy(alpha = 0.38f)`).
+  - Highlights the currently focused match in vibrant amber (`Color(0xFFFF9800).copy(alpha = 0.55f)`) with a bold focus stroke (`Color(0xFFE65100)`).
+- **Automated Viewport Synchronization**:
+  - Jumping between matches smoothly scrolls the reader directly to the match's page in both portrait (`LazyColumn`) and landscape (`HorizontalPager`) orientations.
+  - Hardware back navigation seamlessly closes search mode before exiting the document.
+
+### Key Classes
+- `PdfSearchEngine.kt` (`com.xpdfviewer.pdf`)
+- `PdfSearchModels.kt` (`com.xpdfviewer.data`)
+- `PdfSearchBar.kt` (`com.xpdfviewer.ui.components`)
+- `PdfSearchHighlightCanvas.kt` (`com.xpdfviewer.ui.components`)
+- `PdfTopBar.kt` (`com.xpdfviewer.ui.components`)
+- `PdfPageItem.kt` (`com.xpdfviewer.ui.components`)
+- `PdfViewerViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfViewerScreen.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 16. Night Reading & Eye Comfort Modes
+
+### Overview
+A real-time, GPU-accelerated visual display filter pipeline that transforms the PDF rendering layer using Jetpack Compose `ColorFilter.colorMatrix`. Provides 5 eye-comfort presets to eliminate glare, reduce eye fatigue, and minimize blue-light exposure during low-light reading.
+
+### Capabilities
+- **5 Calibrated Reading Presets (`ReadingMode.kt`)**:
+  - **Original**: Native, unmodified PDF document colors and white paper background.
+  - **Night (Dark)**: Calibrated luminescence matrix mapping white paper to pleasant `#191919` dark charcoal and text to `#E1E1E1` crisp off-white without crushing colored graphics into pure black.
+  - **Warm Sepia**: Amber parchment paper filter removing 26% of harsh blue-violet light for soothing bedtime reading.
+  - **High Contrast**: Dynamic contrast amplification clamping low tones to deep black and boosting faint scanned text.
+  - **Grayscale**: Standard ITU-R BT.601 monochrome filter for clean, distraction-free study.
+- **Zero Overhead & 60fps Performance**:
+  - Applied directly onto the hardware canvas layer inside `PdfPageItem.kt` with zero disk I/O, zero bitmap re-renders, and zero garbage collection spikes.
+- **Coordinated Viewport & Card Canvas**:
+  - Viewport container and page card background colors automatically match the active filter background to prevent white margin flashes.
+- **Interactive Sheet & Top Bar Trigger (`ReadingModeBottomSheet.kt`)**:
+  - Material 3 `ModalBottomSheet` with live sample swatches and descriptive subtitles.
+  - Dedicated palette action button (`Icons.Default.Palette`) in `PdfTopBar.kt` highlighted in primary tint when an eye comfort mode is active.
+- **Cross-Session Memory (`RecentDocumentsRepository.kt`)**:
+  - User preference automatically saved in `SharedPreferences` and restored upon subsequent app launches and document loads.
+
+### Key Classes
+- `ReadingMode.kt` (`com.xpdfviewer.data`)
+- `ReadingModeBottomSheet.kt` (`com.xpdfviewer.ui.components`)
+- `PdfTopBar.kt` (`com.xpdfviewer.ui.components`)
+- `PdfPageItem.kt` (`com.xpdfviewer.ui.components`)
+- `RecentDocumentsRepository.kt` (`com.xpdfviewer.data`)
+- `PdfViewerViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfViewerScreen.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 17. System Architecture & Permissions
 
 ### Storage Access Framework (SAF)
 All file interactions (opening, creating copies, inserting documents) use Android's Storage Access Framework:
@@ -357,13 +538,16 @@ All file interactions (opening, creating copies, inserting documents) use Androi
 
 ---
 
-## 13. Feature Matrix & File Map
+## 18. Feature Matrix & File Map
 
 | Feature | Primary UI Location | Core ViewModel / Engine | Dependencies |
 |---|---|---|---|
 | **PDF Reader** | `PdfViewerScreen.kt` | `PdfViewerViewModel.kt`, `PdfRendererCore.kt` | Native `PdfRenderer` |
 | **Long-Press Menu** | `PdfViewerScreen.kt` | `PdfViewerViewModel.kt` | Compose Material 3 |
-| **Text Selection** | `PdfViewerScreen.kt` | `PdfTextExtractor.kt` | PdfBox-Android |
+| **Text Selection** | `PdfViewerScreen.kt`, `PdfTextOverlayCanvas.kt` | `SpatialTextExtractor.kt`, `TextToSpeechManager.kt` | PdfBox-Android, Android TTS |
+| **Full-Text Search** | `PdfTopBar.kt`, `PdfSearchBar.kt`, `PdfPageItem.kt` | `PdfViewerViewModel.kt`, `PdfSearchEngine.kt` | PdfBox-Android |
+| **Document Outline & Bookmarks** | `PdfTopBar.kt`, `DocumentOutlineSheet.kt`, `AddEditBookmarkDialog.kt` | `PdfViewerViewModel.kt`, `PdfOutlineExtractor.kt` | PdfBox-Android |
+| **Night Reading Modes** | `PdfTopBar.kt`, `ReadingModeBottomSheet.kt`, `PdfPageItem.kt` | `PdfViewerViewModel.kt`, `ReadingMode.kt` | Jetpack Compose `ColorFilter` |
 | **Insert Pages** | `PdfViewerScreen.kt` | `PdfDocumentModifier.kt` | PdfBox-Android |
 | **Extract Page** | `PdfViewerScreen.kt`, `ExtractPageDialog.kt` | `PdfDocumentModifier.kt`, `PdfViewerViewModel.kt` | PdfBox-Android |
 | **Delete Page** | `PdfViewerScreen.kt`, `DeletePageDialog.kt` | `PdfDocumentModifier.kt` | PdfBox-Android |
@@ -371,11 +555,127 @@ All file interactions (opening, creating copies, inserting documents) use Androi
 | **Save Mode Dialog** | `SaveModeDialog.kt` | `PdfViewerViewModel.kt` | Compose Dialog |
 | **OCR Scanner** | `OcrScannerScreen.kt` | `OcrScannerEngine.kt`, `OcrScannerViewModel.kt` | Google ML Kit (`16.0.1`) |
 | **Merge PDFs** | `MergePdfScreen.kt` | `PdfDocumentModifier.kt`, `MergePdfViewModel.kt` | PdfBox-Android |
+| **Protect & Unlock** | `PdfSecurityScreen.kt`, `ToolsScreen.kt` | `PdfSecurityViewModel.kt`, `PdfSecurityManager.kt` | PdfBox-Android |
 | **PDF Utilities Transitions** | `MainAppContainer.kt`, `ToolsScreen.kt` | Compose `AnimatedVisibility` | Material 3 Motion |
 | **Create PDF Speed Dial** | `CreatePdfSpeedDial.kt`, `MainAppContainer.kt` | `MainAppContainer.kt` | Compose Material 3 Animation |
 | **ML Kit Document Scanner** | `ScannedDocumentDialog.kt`, `MainAppContainer.kt` | `DocumentScannerManager.kt` | Google ML Kit Document Scanner (`16.0.0`) |
+| **Page Organizer** | `PageOrganizerScreen.kt`, `OrganizerPageCard.kt` | `PageOrganizerViewModel.kt`, `PdfDocumentModifier.kt` | PdfBox-Android, Native `PdfRenderer` |
+| **Split PDF Utility** | `SplitPdfScreen.kt`, `ToolsScreen.kt`, `SplitSuccessDialog.kt` | `SplitPdfViewModel.kt`, `PdfSplitterEngine.kt` | PdfBox-Android, Android SAF |
+| **Interactive Form Field Filler** | `PdfFormOverlayCanvas.kt`, `FormFieldsBottomSheet.kt`, `FormActionsBar.kt`, `EditFormFieldDialog.kt` | `PdfViewerViewModel.kt`, `PdfFormManager.kt` | PdfBox-Android `PDAcroForm` |
+| **Permanent PDF Redaction Tool** | `PdfRedactionScreen.kt`, `RedactionConfirmDialog.kt`, `RedactionSuccessDialog.kt`, `ToolsScreen.kt` | `PdfRedactionViewModel.kt`, `PdfRedactionEngine.kt`, `RedactionModels.kt` | PdfBox-Android Vector Content Stream, Native `PdfRenderer` |
 | **File Provider** | `AndroidManifest.xml` | `res/xml/file_paths.xml` | AndroidX Core |
 
 ---
+
+## 19. Split PDF Utility
+
+### Overview
+A dedicated offline utility integrated into the **PDF Utilities** tab for carving and splitting PDF documents into smaller files. Supports custom range parsing, equal chunk dividing, and single-page burst extraction.
+
+### Operating Modes
+1. **Custom Range**:
+   - Parses expressions such as `"1-3, 5, 8-12"`.
+   - Supports saving all selected pages into a single extracted PDF or into distinct individual files per range.
+   - Real-time validation warning and bounds clamping against total document pages.
+2. **Fixed Interval**:
+   - Divides documents into equal chunks every *N* pages (stepper controls: - / +, quick presets: 2, 5, 10, 20).
+3. **Burst Pages**:
+   - Explodes document into individual 1-page PDF files (`{prefix}_part_1.pdf`, `{prefix}_part_2.pdf`, ...).
+
+### SAF Directory & File Streaming
+- Sequential document processing with immediate `PDDocument.close()` to avoid `OutOfMemoryError` on 500+ page documents.
+- Batch export to user-selected folders via SAF `ActivityResultContracts.OpenDocumentTree` and `DocumentsContract.createDocument`.
+- Single-file export via `ActivityResultContracts.CreateDocument`.
+
+### Key Files
+- `SplitPdfModels.kt` (`com.xpdfviewer.data`)
+- `PdfSplitterEngine.kt` (`com.xpdfviewer.pdf`)
+- `SplitPdfViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `SplitPdfScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `SplitSuccessDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `ToolsScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `MainAppContainer.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 20. Interactive Form Field Filler (AcroForm) & PDF Flattening Engine
+
+### Overview
+Automatic detection and interactive filling of PDF forms (`PDAcroForm`) directly inside the viewer, supporting text input fields, checkboxes, radio groups, and dropdown choices, with a 1-tap option to flatten entries permanently into the PDF content stream.
+
+### Architecture & Capabilities
+1. **AcroForm Inspection & Coordinate Normalization**:
+   - Parses `PDAcroForm` field trees via `PdfFormManager.kt`.
+   - Maps `PDAnnotationWidget` bounding boxes into top-left normalized canvas coordinates (`NormalizedRect`).
+   - Supports `PDTextField`, `PDCheckBox`, `PDRadioButton`, and `PDChoice`.
+2. **Interactive Canvas Overlay (`PdfFormOverlayCanvas.kt`)**:
+   - Renders field bounds with touch detection directly over `PdfPageItem.kt`.
+   - Tap-to-toggle for checkboxes with vector checkmark appearance.
+   - Tap-to-edit for text, radio, and choice fields opening `EditFormFieldDialog.kt`.
+3. **Sequential Form Assistant Sheet (`FormFieldsBottomSheet.kt`)**:
+   - Page-grouped field list with completion percentage progress indicator.
+   - Jump-to-page navigation for immediate viewport focus.
+   - Clear All action to reset form entries.
+4. **Docked Control Deck (`FormActionsBar.kt`)**:
+   - Floating action banner showing live `X/Y Filled` counter.
+   - 1-tap trigger to open the assistant sheet or export dialog.
+5. **Flattening & Export Engine**:
+   - **Interactive Export**: Saves updated field values while preserving interactive AcroForm structure.
+   - **Flattened Export**: Invokes `acroForm.flatten()` to burn text and marks permanently into page content streams, locking entries against tampering for official submission.
+
+### Key Files
+- `PdfFormFieldModels.kt` (`com.xpdfviewer.data`)
+- `PdfFormManager.kt` (`com.xpdfviewer.pdf`)
+- `PdfFormOverlayCanvas.kt` (`com.xpdfviewer.ui.components`)
+- `FormActionsBar.kt` (`com.xpdfviewer.ui.components`)
+- `FormFieldsBottomSheet.kt` (`com.xpdfviewer.ui.components`)
+- `EditFormFieldDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `FormSaveChoiceDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `PdfViewerViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfViewerScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `PdfTopBar.kt` (`com.xpdfviewer.ui.components`)
+
+---
+
+## 21. Permanent PDF Redaction Tool
+
+### Overview
+A dedicated offline redaction studio accessible from the **PDF Utilities** hub, enabling users to permanently sanitize sensitive personally identifiable information (PII), banking details, names, addresses, or confidential text from PDF documents. Unlike simple cosmetic highlighter or markup tools, redaction in xPDF Viewer physically alters the PDF content stream and scrubs covert metadata dictionaries.
+
+### Key Capabilities
+1. **Interactive Touch-Drag Canvas (`PdfRedactionScreen.kt`)**:
+   - High-resolution page rendering via background `PdfRendererCore`.
+   - Intuitive touch-and-drag gesture bounding box placement with real-time drag preview.
+   - Per-mark delete chips and pending redaction count tracker.
+   - Dynamic page stepper with thumbnail indicator and fast navigation.
+2. **Multi-Page Keyword Auto-Search & Redaction**:
+   - Search bar input querying `PdfSearchEngine.searchDocument` across all document pages.
+   - 1-tap "Redact All" automatically maps word bounding boxes to pending redaction marks across every page.
+3. **True Vector Content Stream Blackout (`PdfRedactionEngine.kt`)**:
+   - Converts normalized canvas coordinates into bottom-left PDF coordinate space (`MediaBox` / `CropBox`).
+   - Appends solid vector fill operations (`PDPageContentStream.addRect()`, `fill()`) with opaque `#000000` ink in `APPEND` mode.
+   - Blackout plates become an irreversible physical part of the PDF graphics stream.
+4. **Annotation Pruning**:
+   - Detects and prunes overlapping `PDAnnotation` objects (comments, highlights, widgets) whose rectangles intersect redaction zones.
+5. **Metadata & XMP Dictionary Scrubbing**:
+   - Empties all metadata attributes in `doc.documentInformation` (`title`, `author`, `subject`, `keywords`, `creator`, `producer`, `creationDate`, `modificationDate`).
+   - Removes embedded XMP metadata stream from `doc.documentCatalog.metadata`.
+6. **Safety Confirmation & SAF Export**:
+   - Irreversibility warning prompt (`RedactionConfirmDialog.kt`).
+   - Direct export to chosen directory via Android Storage Access Framework (`CreateDocument`) with `_redacted.pdf` suffix.
+   - Post-export success dialog with instant Open and Share actions (`RedactionSuccessDialog.kt`).
+
+### Key Files
+- `RedactionModels.kt` (`com.xpdfviewer.data`)
+- `PdfRedactionEngine.kt` (`com.xpdfviewer.pdf`)
+- `PdfRedactionViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfRedactionScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `RedactionConfirmDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `RedactionSuccessDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `ToolsScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `MainAppContainer.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
 *Documentation generated for xPDFViewer. All features offline, secure, and fully verified.*
 

@@ -21,10 +21,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Draw
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -49,6 +52,9 @@ fun ToolsScreen(
     onOpenMergePdf: () -> Unit = {},
     onOpenCompressPdf: () -> Unit = {},
     onOpenSignPdf: () -> Unit = {},
+    onOpenSecurity: () -> Unit = {},
+    onOpenSplitPdf: () -> Unit = {},
+    onOpenRedactPdf: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -82,9 +88,6 @@ fun ToolsScreen(
                     title = "OCR Scanner",
                     description = "Extract text from scanned photo documents.",
                     icon = Icons.Default.DocumentScanner,
-                    badgeText = "Ready",
-                    badgeColor = Color(0xFFDCFCE7),
-                    badgeTextColor = Color(0xFF166534),
                     onClick = onOpenOcrScanner
                 )
             }
@@ -94,9 +97,6 @@ fun ToolsScreen(
                     title = "Merge PDFs",
                     description = "Combine multiple documents into one single file.",
                     icon = Icons.Default.Layers,
-                    badgeText = "Ready",
-                    badgeColor = Color(0xFFDCFCE7),
-                    badgeTextColor = Color(0xFF166534),
                     onClick = onOpenMergePdf
                 )
             }
@@ -106,9 +106,6 @@ fun ToolsScreen(
                     title = "Compress",
                     description = "Reduce PDF file size for easy email sharing.",
                     icon = Icons.Default.Compress,
-                    badgeText = "Ready",
-                    badgeColor = Color(0xFFDCFCE7),
-                    badgeTextColor = Color(0xFF166534),
                     onClick = onOpenCompressPdf
                 )
             }
@@ -118,10 +115,34 @@ fun ToolsScreen(
                     title = "E-Signature",
                     description = "Sign contracts and export encrypted files.",
                     icon = Icons.Default.Draw,
-                    badgeText = "Ready",
-                    badgeColor = Color(0xFFDCFCE7),
-                    badgeTextColor = Color(0xFF166534),
                     onClick = onOpenSignPdf
+                )
+            }
+
+            item {
+                ToolGridCard(
+                    title = "Protect & Unlock",
+                    description = "Add or remove password protection and security permissions.",
+                    icon = Icons.Default.Lock,
+                    onClick = onOpenSecurity
+                )
+            }
+
+            item {
+                ToolGridCard(
+                    title = "Split PDF",
+                    description = "Extract pages by custom range or split into multiple files.",
+                    icon = Icons.AutoMirrored.Filled.CallSplit,
+                    onClick = onOpenSplitPdf
+                )
+            }
+
+            item {
+                ToolGridCard(
+                    title = "Redact PDF",
+                    description = "Permanently sanitize sensitive text, images, and metadata.",
+                    icon = Icons.Default.Security,
+                    onClick = onOpenRedactPdf
                 )
             }
 
@@ -137,7 +158,7 @@ private fun ToolGridCard(
     title: String,
     description: String,
     icon: ImageVector,
-    badgeText: String? = "Soon",
+    badgeText: String? = null,
     badgeColor: Color = Color(0xFFFEF3C7),
     badgeTextColor: Color = Color(0xFF92400E),
     onClick: (() -> Unit)? = null
