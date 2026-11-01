@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import com.xpdfviewer.data.AudioPlaybackStatus
 import com.xpdfviewer.data.AudioReaderUiState
 import com.xpdfviewer.data.AudioSpeed
+import com.xpdfviewer.data.EmotionTone
 import com.xpdfviewer.data.SleepTimerPreset
 
 @Composable
@@ -137,11 +138,34 @@ fun AudioPlayerDock(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             if (uiState.totalSentencesOnPage > 0) {
-                                Text(
-                                    text = "Sentence ${uiState.currentSentenceIndex + 1} of ${uiState.totalSentencesOnPage}",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Sentence ${uiState.currentSentenceIndex + 1} of ${uiState.totalSentencesOnPage}",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    if (uiState.isCurrentDialogue) {
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "• 💬 Dialogue",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    } else if (uiState.currentEmotionTone != EmotionTone.NEUTRAL) {
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "• ${uiState.currentEmotionTone.iconSymbol} ${uiState.currentEmotionTone.label}",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
+                                            color = MaterialTheme.colorScheme.tertiary
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

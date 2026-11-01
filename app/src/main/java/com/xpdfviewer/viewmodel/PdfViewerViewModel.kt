@@ -83,6 +83,8 @@ class PdfViewerViewModel : ViewModel() {
                     )
                 )
             }
+            // Pre-warm audio reader so TTS engine binds in background before first user tap
+            getOrCreateAudioReader(context)
         }
     }
 
@@ -1216,14 +1218,17 @@ class PdfViewerViewModel : ViewModel() {
                             activeSentenceWordBounds = sentence.wordBounds,
                             activeWordBounds = sentence.wordTokens.firstOrNull()?.bounds ?: emptyList(),
                             activeWordText = sentence.wordTokens.firstOrNull()?.spokenText,
-                            totalSentencesOnPage = totalSentences
+                            totalSentencesOnPage = totalSentences,
+                            currentEmotionTone = sentence.prosody.emotionTone,
+                            isCurrentDialogue = sentence.prosody.isDialogue
                         )
                     )
                 }
+                val toneTag = if (sentence.prosody.isDialogue) "Dialogue" else sentence.prosody.emotionTone.label
                 AudioPlaybackService.update(
                     context,
                     title = _uiState.value.fileName.ifBlank { "xPDF Document" },
-                    pageInfo = "Page ${pageIndex + 1}: ${sentence.text}",
+                    pageInfo = "Page ${pageIndex + 1} • $toneTag: ${sentence.text}",
                     isPlaying = true
                 )
             }

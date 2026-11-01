@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/PdfViewerViewModel.kt": {
-    "mtime": 1793530457.8170888,
-    "seen": 1793530511.7835867,
-    "ast_hash": "79c3c981d026dddae09062bb7d4db65a",
+    "mtime": 1793533286.199546,
+    "seen": 1793533372.5252924,
+    "ast_hash": "5568f01704731a7a9a2f4631a0042269",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/SignPdfViewModel.kt": {
@@ -1518,21 +1518,21 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/data/AudioReaderModels.kt": {
-    "mtime": 1793523319.5613854,
-    "seen": 1793523633.4697292,
-    "ast_hash": "6785e507743c1465ad8002985d9dead3",
+    "mtime": 1793533032.2085195,
+    "seen": 1793533372.5243003,
+    "ast_hash": "6d7a236ece58286baad88d66eccad67c",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/ContinuousAudioReader.kt": {
-    "mtime": 1793530382.4605534,
-    "seen": 1793530511.7835867,
-    "ast_hash": "5d6201895f6e3e789e85e085705cd289",
+    "mtime": 1793533608.2144256,
+    "seen": 1793533692.6947644,
+    "ast_hash": "4d3b16c7771ebdbbafb5a3cba8983fbb",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/AudioPlayerDock.kt": {
-    "mtime": 1793523001.9369621,
-    "seen": 1793523289.814459,
-    "ast_hash": "025289d73af808867aa2752a1d31162d",
+    "mtime": 1793531842.6525354,
+    "seen": 1793532792.4112432,
+    "ast_hash": "b739a91d2233c6b1753c09713b160c3f",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/PdfAudioHighlightCanvas.kt": {
@@ -1548,8 +1548,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/service/AudioPlaybackService.kt": {
-    "mtime": 1793530357.1602237,
-    "seen": 1793530511.7835867,
+    "mtime": 1793530545.969265,
+    "seen": 1793531388.4191344,
     "ast_hash": "da2c404d794e0a73fbf909617964fd5a",
     "semantic_hash": ""
   },
@@ -1560,9 +1560,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/AudioVoiceSettingsSheet.kt": {
-    "mtime": 1793523315.4156375,
-    "seen": 1793523633.4697292,
-    "ast_hash": "43a342e433f4d2578758a272011e4caa",
+    "mtime": 1793533032.3891459,
+    "seen": 1793533372.5243003,
+    "ast_hash": "6bad694b7ed7fa09e3aa0bcc6013b32a",
     "semantic_hash": ""
   },
   "app/src/test/java/com/xpdfviewer/speech/AudioTextNormalizerTest.kt": {
@@ -1581,6 +1581,24 @@
     "mtime": 1793524148.4816084,
     "seen": 1793524463.2963338,
     "ast_hash": "fbb7a12faf5716e2530f08ac393cd48f",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/speech/AudioProsodyEngine.kt": {
+    "mtime": 1793533632.1085732,
+    "seen": 1793533692.6947644,
+    "ast_hash": "076c430cc3d0ab5a18a988c7f4d3ed66",
+    "semantic_hash": ""
+  },
+  "app/src/test/java/com/xpdfviewer/speech/AudioProsodyEngineTest.kt": {
+    "mtime": 1793533644.4640732,
+    "seen": 1793533692.6957667,
+    "ast_hash": "89658a3c0cab7e34ca54125fe235a077",
+    "semantic_hash": ""
+  },
+  "lila-and-the-heart-of-whispers.pdf": {
+    "mtime": 1793521484.1621492,
+    "seen": 1793532792.4112432,
+    "ast_hash": "37b0140f5bad44cb43857d0cb4ca821f",
     "semantic_hash": ""
   }
 }

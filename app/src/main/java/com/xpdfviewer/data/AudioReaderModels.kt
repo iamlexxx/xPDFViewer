@@ -25,6 +25,23 @@ enum class SleepTimerPreset(val minutes: Int, val label: String) {
     END_OF_PAGE(-1, "End of Page")
 }
 
+enum class EmotionTone(val label: String, val iconSymbol: String) {
+    NEUTRAL("Narrative", "📖"),
+    EXCITED("Excited", "⚡"),
+    INQUISITIVE("Question", "❓"),
+    SUSPENSE_SOMBER("Somber", "🌙"),
+    CHEERFUL("Cheerful", "✨")
+}
+
+data class SentenceProsody(
+    val emotionTone: EmotionTone = EmotionTone.NEUTRAL,
+    val isDialogue: Boolean = false,
+    val pitchMultiplier: Float = 1.0f,
+    val speedMultiplier: Float = 1.0f,
+    val postPauseMs: Long = 140L,
+    val isParagraphEnd: Boolean = false
+)
+
 data class AudioWordToken(
     val index: Int,
     val rawText: String,
@@ -40,7 +57,9 @@ data class AudioVoiceProfile(
     val localeLanguage: String,
     val localeCountry: String,
     val isNetworkRequired: Boolean = false,
-    val quality: Int = 300
+    val quality: Int = 300,
+    val isHighDefinition: Boolean = false,
+    val gender: String? = null
 )
 
 data class AudioSentence(
@@ -48,7 +67,8 @@ data class AudioSentence(
     val text: String,
     val wordTokens: List<AudioWordToken> = emptyList(),
     val wordIndices: List<Int> = emptyList(),
-    val wordBounds: List<NormalizedRect> = emptyList()
+    val wordBounds: List<NormalizedRect> = emptyList(),
+    val prosody: SentenceProsody = SentenceProsody()
 )
 
 data class AudioPageContent(
@@ -73,6 +93,8 @@ data class AudioReaderUiState(
     val pitch: Float = 1.0f,
     val selectedVoiceId: String? = null,
     val selectedVoiceName: String? = null,
+    val currentEmotionTone: EmotionTone = EmotionTone.NEUTRAL,
+    val isCurrentDialogue: Boolean = false,
     val sleepTimer: SleepTimerPreset = SleepTimerPreset.OFF,
     val sleepTimerRemainingSeconds: Int = 0,
     val isAutoScrollEnabled: Boolean = true,

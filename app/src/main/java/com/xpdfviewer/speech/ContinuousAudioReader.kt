@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import com.xpdfviewer.data.AudioPageContent
 import com.xpdfviewer.data.AudioPlaybackStatus
 import com.xpdfviewer.data.AudioSentence
@@ -172,6 +173,7 @@ class ContinuousAudioReader(
 ) {
     private var tts: TextToSpeech? = null
     private var isInitialized = false
+    private var pendingPlayOnReady = false
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
 
@@ -208,57 +210,106 @@ class ContinuousAudioReader(
     }
 
     init {
-        tts = TextToSpeech(context.applicationContext) { initStatus ->
-            if (initStatus == TextToSpeech.SUCCESS) {
-                isInitialized = true
-                tts?.language = Locale.getDefault()
-                tts?.setSpeechRate(currentSpeed.speed)
-                tts?.setPitch(currentPitch)
-                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                    override fun onStart(utteranceId: String?) {
-                        if (utteranceId == currentUtteranceId) {
-                            updateStatus(AudioPlaybackStatus.PLAYING)
-                        }
-                    }
+        val preferredEngine = getPreferredTtsEngine(context)
+        tts = if (preferredEngine != null) {
+            TextToSpeech(context.applicationContext, { initStatus -> onTtsInit(initStatus) }, preferredEngine)
+        } else {
+            TextToSpeech(context.applicationContext) { initStatus -> onTtsInit(initStatus) }
+        }
+    }
 
-                    override fun onDone(utteranceId: String?) {
-                        if (utteranceId == currentUtteranceId) {
-                            scope.launch(Dispatchers.Main) {
-                                advanceNextSentence()
-                            }
-                        }
+    private fun onTtsInit(initStatus: Int) {
+        if (initStatus == TextToSpeech.SUCCESS) {
+            isInitialized = true
+            tts?.language = Locale.getDefault()
+            tts?.setSpeechRate(currentSpeed.speed)
+            tts?.setPitch(currentPitch)
+            autoSelectBestVoice()
+            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {
+                    if (utteranceId == currentUtteranceId) {
+                        updateStatus(AudioPlaybackStatus.PLAYING)
                     }
+                }
 
-                    @Deprecated("Deprecated in Java")
-                    override fun onError(utteranceId: String?) {
-                        if (utteranceId == currentUtteranceId) {
-                            updateStatus(AudioPlaybackStatus.PAUSED)
+                override fun onDone(utteranceId: String?) {
+                    if (utteranceId == currentUtteranceId) {
+                        scope.launch(Dispatchers.Main) {
+                            advanceNextSentence()
                         }
                     }
+                }
 
-                    override fun onError(utteranceId: String?, errorCode: Int) {
-                        if (utteranceId == currentUtteranceId) {
-                            updateStatus(AudioPlaybackStatus.PAUSED)
-                        }
+                @Deprecated("Deprecated in Java")
+                override fun onError(utteranceId: String?) {
+                    if (utteranceId == currentUtteranceId) {
+                        updateStatus(AudioPlaybackStatus.PAUSED)
                     }
+                }
 
-                    override fun onStop(utteranceId: String?, interrupted: Boolean) {
-                        if (utteranceId == currentUtteranceId && !interrupted) {
-                            updateStatus(AudioPlaybackStatus.PAUSED)
-                        }
+                override fun onError(utteranceId: String?, errorCode: Int) {
+                    if (utteranceId == currentUtteranceId) {
+                        updateStatus(AudioPlaybackStatus.PAUSED)
                     }
+                }
 
-                    override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
-                        if (utteranceId == currentUtteranceId) {
-                            scope.launch(Dispatchers.Main) {
-                                handleWordRange(start, end)
-                            }
+                override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                    if (utteranceId == currentUtteranceId && !interrupted) {
+                        updateStatus(AudioPlaybackStatus.PAUSED)
+                    }
+                }
+
+                override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                    if (utteranceId == currentUtteranceId) {
+                        scope.launch(Dispatchers.Main) {
+                            handleWordRange(start, end)
                         }
                     }
-                })
-            } else {
-                updateStatus(AudioPlaybackStatus.IDLE)
+                }
+            })
+
+            // If a sentence was queued while TTS engine was initializing, execute it now
+            if (pendingPlayOnReady && activePageContent != null) {
+                pendingPlayOnReady = false
+                scope.launch(Dispatchers.Main) {
+                    playCurrentSentence()
+                }
             }
+        } else {
+            pendingPlayOnReady = false
+            updateStatus(AudioPlaybackStatus.IDLE)
+        }
+    }
+
+    private fun autoSelectBestVoice() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return
+        val allVoices = tts?.voices ?: return
+        if (allVoices.isEmpty()) return
+
+        // 1. If user previously chose a voice and it's valid, restore it
+        if (!currentVoiceId.isNullOrBlank()) {
+            val savedVoice = allVoices.firstOrNull { it.name == currentVoiceId }
+            if (savedVoice != null) {
+                tts?.voice = savedVoice
+                return
+            }
+        }
+
+        // 2. Filter candidate voices for active language
+        val defaultLang = Locale.getDefault().language
+        val candidateVoices = allVoices.filter { voice ->
+            !voice.isNetworkConnectionRequired &&
+            voice.locale.language.equals(defaultLang, ignoreCase = true)
+        }
+
+        // 3. Find highest quality voice (QUALITY_VERY_HIGH = 500, QUALITY_HIGH = 400)
+        val bestVoice = candidateVoices.maxByOrNull { it.quality }
+            ?: allVoices.filter { !it.isNetworkConnectionRequired }.maxByOrNull { it.quality }
+            ?: allVoices.firstOrNull()
+
+        if (bestVoice != null) {
+            tts?.voice = bestVoice
+            currentVoiceId = bestVoice.name
         }
     }
 
@@ -268,8 +319,11 @@ class ContinuousAudioReader(
         pageIndex: Int,
         words: List<SpatialWord>,
         skipHeaderFooter: Boolean = this.skipHeaderFooter
-    ): AudioPageContent =
-        AudioSentenceSegmenter.segmentIntoSentences(pageIndex, words, skipHeaderFooter)
+    ): AudioPageContent {
+        val rawContent = AudioSentenceSegmenter.segmentIntoSentences(pageIndex, words, skipHeaderFooter)
+        val prosodySentences = AudioProsodyEngine.analyze(rawContent.sentences)
+        return rawContent.copy(sentences = prosodySentences)
+    }
 
     fun loadAndPlayPage(pageContent: AudioPageContent, startSentenceIndex: Int = 0) {
         activePageContent = pageContent
@@ -306,6 +360,13 @@ class ContinuousAudioReader(
             return
         }
 
+        // If TTS service is still binding in background, defer until onTtsInit
+        if (!isInitialized) {
+            pendingPlayOnReady = true
+            updateStatus(AudioPlaybackStatus.BUFFERING)
+            return
+        }
+
         val sentence = content.sentences[currentSentenceIdx]
         onSentenceChanged?.invoke(content.pageIndex, sentence, content.sentences.size)
 
@@ -324,16 +385,39 @@ class ContinuousAudioReader(
         }
 
         updateStatus(AudioPlaybackStatus.BUFFERING)
+        // Keep vocal timbre locked to user's chosen pitch to prevent erratic pitch jumping between sentences
         tts?.setSpeechRate(currentSpeed.speed)
         tts?.setPitch(currentPitch)
-        tts?.speak(sentence.text, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
+        val speakResult = tts?.speak(sentence.text, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
+        if (speakResult != TextToSpeech.SUCCESS) {
+            scope.launch(Dispatchers.Main) {
+                delay(200)
+                if (activePageContent != null && currentUtteranceId == utteranceId) {
+                    val retryResult = tts?.speak(sentence.text, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
+                    if (retryResult != TextToSpeech.SUCCESS) {
+                        updateStatus(AudioPlaybackStatus.PAUSED)
+                    }
+                }
+            }
+        }
     }
 
     private fun advanceNextSentence() {
         val content = activePageContent ?: return
         if (currentSentenceIdx < content.sentences.size - 1) {
+            val finishedSentence = content.sentences[currentSentenceIdx]
+            val pauseMs = finishedSentence.prosody.postPauseMs
             currentSentenceIdx++
-            playCurrentSentence()
+            if (pauseMs > 0) {
+                scope.launch(Dispatchers.Main) {
+                    delay(pauseMs)
+                    if (activePageContent != null) {
+                        playCurrentSentence()
+                    }
+                }
+            } else {
+                playCurrentSentence()
+            }
         } else {
             handlePageFinished()
         }
@@ -407,21 +491,62 @@ class ContinuousAudioReader(
 
     fun getAvailableVoices(): List<AudioVoiceProfile> {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return tts?.voices
-                ?.filter { !it.isNetworkConnectionRequired }
-                ?.map {
-                    AudioVoiceProfile(
-                        id = it.name,
-                        name = it.name.substringAfterLast("-", it.name),
-                        localeLanguage = it.locale.displayLanguage,
-                        localeCountry = it.locale.displayCountry,
-                        isNetworkRequired = it.isNetworkConnectionRequired,
-                        quality = it.quality
-                    )
-                }
-                ?.sortedBy { it.localeLanguage } ?: emptyList()
+            val voices = tts?.voices ?: return emptyList()
+            return voices
+                .filter { !it.isNetworkConnectionRequired }
+                .map { parseVoiceInfo(it) }
+                .sortedWith(
+                    compareByDescending<AudioVoiceProfile> { it.isHighDefinition }
+                        .thenByDescending { it.quality }
+                        .thenBy { it.localeLanguage }
+                        .thenBy { it.name }
+                )
         }
         return emptyList()
+    }
+
+    companion object {
+        const val GOOGLE_TTS_PACKAGE = "com.google.android.tts"
+
+        fun getPreferredTtsEngine(context: Context): String? {
+            return try {
+                val pm = context.packageManager
+                pm.getPackageInfo(GOOGLE_TTS_PACKAGE, 0)
+                GOOGLE_TTS_PACKAGE
+            } catch (_: Exception) {
+                null
+            }
+        }
+
+        fun parseVoiceInfo(voice: Voice): AudioVoiceProfile {
+            val name = voice.name
+            val isHD = voice.quality >= 400 || name.contains("journey", ignoreCase = true) || name.contains("wavenet", ignoreCase = true)
+            val gender = when {
+                name.contains("female", ignoreCase = true) -> "Female"
+                name.contains("male", ignoreCase = true) -> "Male"
+                else -> null
+            }
+            val cleanVariant = when {
+                name.contains("x-") -> {
+                    val suffix = name.substringAfter("x-").substringBefore("-local")
+                    val idNum = Regex("\\d+").find(suffix)?.value ?: ""
+                    if (gender != null) "$gender $idNum".trim() else suffix
+                }
+                name.contains("-") -> name.substringAfterLast("-")
+                else -> name
+            }
+            val displayName = if (isHD) "✨ $cleanVariant (HD)" else cleanVariant
+            return AudioVoiceProfile(
+                id = voice.name,
+                name = displayName,
+                localeLanguage = voice.locale.displayLanguage,
+                localeCountry = voice.locale.displayCountry,
+                isNetworkRequired = voice.isNetworkConnectionRequired,
+                quality = voice.quality,
+                isHighDefinition = isHD,
+                gender = gender
+            )
+        }
     }
 
     fun setSleepTimer(preset: SleepTimerPreset) {
@@ -447,6 +572,7 @@ class ContinuousAudioReader(
     }
 
     fun stop() {
+        pendingPlayOnReady = false
         currentUtteranceId = null
         activePageContent = null
         currentSentenceIdx = 0
