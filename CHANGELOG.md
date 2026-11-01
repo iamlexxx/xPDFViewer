@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Manages audio focus (`AudioManager.OnAudioFocusChangeListener`) with automatic pause on external interruptions.
   - **Synchronized Spotlight Overlay**:
     - Paints warm amber spotlight (`Color(0xFFF59E0B)`) with rounded borders over words of the sentence being spoken in real-time.
+    - **Speech Suite v2 Enhancements**:
+      * **Word-by-Word "Karaoke" Tracking (`onRangeStart`)**: Dual-tone spotlight rendering with character-to-token offset mapping for real-time word tracking.
+      * **PDF De-Hyphenation & Text Normalizer (`AudioTextNormalizer.kt`)**: Line-break hyphen merging, ligature expansion (`ﬁ`, `ﬂ`, `œ`), citation suppression (`[1]`, `[14-16]`), and abbreviation pronunciation expansion.
+      * **Interactive Tap-to-Speak**: Direct single-tap seeking on document page jumping speech narration instantly to tapped sentences.
+      * **Voice Engine & Pitch Customizer (`AudioVoiceSettingsSheet.kt`)**: Offline voice selection and pitch adjustment (`0.80×` to `1.20×`).
+      * **Background Media Service (`AudioPlaybackService.kt`)**: Android foreground service with lock screen and notification shade media deck for screen-off playback.
   - **Floating Playback Dock (`AudioPlayerDock.kt`)**:
     - Glassmorphic floating controller with Play/Pause, sentence Skip Backward/Forward, and speed selector (`0.75×`–`2.0×`).
     - Sleep timer options (15m, 30m, 45m, 60m, or End of Current Page).

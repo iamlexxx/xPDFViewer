@@ -251,10 +251,15 @@ fun PdfPageItem(
                     }
                 }
 
-                // Continuous Audio Reader Sentence Highlight Overlay
+                // Continuous Audio Reader Sentence Highlight Overlay & Tap-to-Speak
                 if (uiState.audioReaderState.isActive && uiState.audioReaderState.currentPageIndex == pageIndex) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     PdfAudioHighlightCanvas(
-                        wordBounds = uiState.audioReaderState.activeSentenceWordBounds,
+                        sentenceWordBounds = uiState.audioReaderState.activeSentenceWordBounds,
+                        activeWordBounds = uiState.audioReaderState.activeWordBounds,
+                        onTapCoordinate = { normX, normY ->
+                            viewModel.jumpAudioToCoordinate(context, pageIndex, normX, normY)
+                        },
                         modifier = Modifier.fillMaxSize()
                     )
                 }

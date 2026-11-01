@@ -25,11 +25,30 @@ enum class SleepTimerPreset(val minutes: Int, val label: String) {
     END_OF_PAGE(-1, "End of Page")
 }
 
+data class AudioWordToken(
+    val index: Int,
+    val rawText: String,
+    val spokenText: String,
+    val charStart: Int,
+    val charEnd: Int,
+    val bounds: List<NormalizedRect>
+)
+
+data class AudioVoiceProfile(
+    val id: String,
+    val name: String,
+    val localeLanguage: String,
+    val localeCountry: String,
+    val isNetworkRequired: Boolean = false,
+    val quality: Int = 300
+)
+
 data class AudioSentence(
     val index: Int,
     val text: String,
-    val wordIndices: List<Int>,
-    val wordBounds: List<NormalizedRect>
+    val wordTokens: List<AudioWordToken> = emptyList(),
+    val wordIndices: List<Int> = emptyList(),
+    val wordBounds: List<NormalizedRect> = emptyList()
 )
 
 data class AudioPageContent(
@@ -47,8 +66,13 @@ data class AudioReaderUiState(
     val currentSentenceIndex: Int = 0,
     val currentSentenceText: String = "",
     val activeSentenceWordBounds: List<NormalizedRect> = emptyList(),
+    val activeWordBounds: List<NormalizedRect> = emptyList(),
+    val activeWordText: String? = null,
     val totalSentencesOnPage: Int = 0,
     val speed: AudioSpeed = AudioSpeed.SPEED_1_0,
+    val pitch: Float = 1.0f,
+    val selectedVoiceId: String? = null,
+    val selectedVoiceName: String? = null,
     val sleepTimer: SleepTimerPreset = SleepTimerPreset.OFF,
     val sleepTimerRemainingSeconds: Int = 0,
     val isAutoScrollEnabled: Boolean = true,
@@ -56,4 +80,3 @@ data class AudioReaderUiState(
 ) {
     val isPlaying: Boolean get() = status == AudioPlaybackStatus.PLAYING
 }
-

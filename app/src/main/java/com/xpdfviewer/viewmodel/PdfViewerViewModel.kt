@@ -20,6 +20,9 @@ import com.xpdfviewer.data.DocumentFormState
 import com.xpdfviewer.data.AudioPlaybackStatus
 import com.xpdfviewer.data.AudioReaderUiState
 import com.xpdfviewer.data.AudioSpeed
+import com.xpdfviewer.data.AudioPageContent
+import com.xpdfviewer.data.AudioVoiceProfile
+import com.xpdfviewer.service.AudioPlaybackService
 import com.xpdfviewer.data.FormFieldItem
 import com.xpdfviewer.data.OutlineNode
 import com.xpdfviewer.data.OutlineTab
@@ -60,6 +63,7 @@ class PdfViewerViewModel : ViewModel() {
     private var recentRepository: RecentDocumentsRepository? = null
     private var ttsManager: TextToSpeechManager? = null
     private var continuousAudioReader: ContinuousAudioReader? = null
+    private var currentAudioPageContent: AudioPageContent? = null
     private var searchJob: Job? = null
 
     fun initialize(context: Context) {
@@ -1174,6 +1178,15 @@ class PdfViewerViewModel : ViewModel() {
     private fun getOrCreateAudioReader(context: Context): ContinuousAudioReader {
         return continuousAudioReader ?: ContinuousAudioReader(context.applicationContext, viewModelScope).also { reader ->
             continuousAudioReader = reader
+
+            // Wire Service Commander for system notifications & lock screen controls
+            AudioPlaybackService.commander = object : AudioPlaybackService.AudioPlaybackCommander {
+                override fun onTogglePlayPause() { toggleAudioPlayPause(context) }
+                override fun onSkipNext() { skipAudioNext(context) }
+                override fun onSkipPrevious() { skipAudioPrevious(context) }
+                override fun onStop() { stopAudioReader(context) }
+            }
+
             reader.onSentenceChanged = { pageIndex, sentence, totalSentences ->
                 _uiState.update { state ->
                     state.copy(
@@ -1182,7 +1195,25 @@ class PdfViewerViewModel : ViewModel() {
                             currentSentenceIndex = sentence.index,
                             currentSentenceText = sentence.text,
                             activeSentenceWordBounds = sentence.wordBounds,
+                            activeWordBounds = sentence.wordTokens.firstOrNull()?.bounds ?: emptyList(),
+                            activeWordText = sentence.wordTokens.firstOrNull()?.spokenText,
                             totalSentencesOnPage = totalSentences
+                        )
+                    )
+                }
+                AudioPlaybackService.update(
+                    context,
+                    title = _uiState.value.fileName.ifBlank { "xPDF Document" },
+                    pageInfo = "Page ${pageIndex + 1}: ${sentence.text}",
+                    isPlaying = true
+                )
+            }
+            reader.onWordChanged = { pageIndex, wordToken ->
+                _uiState.update { state ->
+                    state.copy(
+                        audioReaderState = state.audioReaderState.copy(
+                            activeWordBounds = wordToken.bounds,
+                            activeWordText = wordToken.spokenText
                         )
                     )
                 }
@@ -1193,13 +1224,19 @@ class PdfViewerViewModel : ViewModel() {
                         audioReaderState = state.audioReaderState.copy(status = status)
                     )
                 }
+                AudioPlaybackService.update(
+                    context,
+                    title = _uiState.value.fileName.ifBlank { "xPDF Document" },
+                    pageInfo = "Page ${_uiState.value.audioReaderState.currentPageIndex + 1} • ${_uiState.value.audioReaderState.currentSentenceText}",
+                    isPlaying = (status == AudioPlaybackStatus.PLAYING)
+                )
             }
             reader.onPageCompleted = { completedPageIndex ->
                 val nextPageIndex = completedPageIndex + 1
                 if (nextPageIndex < _uiState.value.pageCount) {
                     loadAndReadPage(context, nextPageIndex)
                 } else {
-                    stopAudioReader()
+                    stopAudioReader(context)
                 }
             }
             reader.onSleepTimerTick = { seconds ->
@@ -1210,7 +1247,7 @@ class PdfViewerViewModel : ViewModel() {
                 }
             }
             reader.onSleepTimerExpired = {
-                stopAudioReader()
+                stopAudioReader(context)
             }
         }
     }
@@ -1218,7 +1255,7 @@ class PdfViewerViewModel : ViewModel() {
     fun toggleAudioReader(context: Context) {
         val currentState = _uiState.value.audioReaderState
         if (currentState.isActive) {
-            stopAudioReader()
+            stopAudioReader(context)
         } else {
             val startPage = (_uiState.value.currentPage - 1).coerceAtLeast(0)
             _uiState.update {
@@ -1230,6 +1267,12 @@ class PdfViewerViewModel : ViewModel() {
                     )
                 )
             }
+            AudioPlaybackService.start(
+                context,
+                title = _uiState.value.fileName.ifBlank { "xPDF Document" },
+                pageInfo = "Page ${startPage + 1}",
+                isPlaying = true
+            )
             loadAndReadPage(context, startPage)
         }
     }
@@ -1243,7 +1286,8 @@ class PdfViewerViewModel : ViewModel() {
                     audioReaderState = state.audioReaderState.copy(
                         currentPageIndex = pageIndex,
                         status = AudioPlaybackStatus.BUFFERING,
-                        activeSentenceWordBounds = emptyList()
+                        activeSentenceWordBounds = emptyList(),
+                        activeWordBounds = emptyList()
                     )
                 )
             }
@@ -1252,8 +1296,42 @@ class PdfViewerViewModel : ViewModel() {
             val reader = getOrCreateAudioReader(context)
             val skipHeaders = _uiState.value.audioReaderState.skipHeaderFooter
             val pageContent = reader.segmentIntoSentences(pageIndex, spatialData.words, skipHeaders)
+            currentAudioPageContent = pageContent
 
             reader.loadAndPlayPage(pageContent, startSentenceIndex)
+        }
+    }
+
+    fun jumpAudioToCoordinate(context: Context, pageIndex: Int, normX: Float, normY: Float) {
+        if (!_uiState.value.audioReaderState.isActive) return
+        val content = currentAudioPageContent
+        if (content == null || content.pageIndex != pageIndex) {
+            loadAndReadPage(context, pageIndex)
+            return
+        }
+
+        val hitIndex = content.sentences.indexOfFirst { sentence ->
+            sentence.wordBounds.any { rect ->
+                normX in (rect.left - 0.02f)..(rect.right + 0.02f) &&
+                normY in (rect.top - 0.015f)..(rect.bottom + 0.015f)
+            }
+        }
+
+        val reader = getOrCreateAudioReader(context)
+        if (hitIndex != -1) {
+            reader.loadAndPlayPage(content, hitIndex)
+        } else {
+            val nearestSentence = content.sentences.minByOrNull { sentence ->
+                val avgY = if (sentence.wordBounds.isNotEmpty()) {
+                    sentence.wordBounds.map { it.centerY }.average().toFloat()
+                } else {
+                    0f
+                }
+                Math.abs(avgY - normY)
+            }
+            if (nearestSentence != null) {
+                reader.loadAndPlayPage(content, nearestSentence.index)
+            }
         }
     }
 
@@ -1299,6 +1377,29 @@ class PdfViewerViewModel : ViewModel() {
         }
     }
 
+    fun setAudioPitch(pitch: Float) {
+        continuousAudioReader?.setPitch(pitch)
+        _uiState.update { state ->
+            state.copy(audioReaderState = state.audioReaderState.copy(pitch = pitch))
+        }
+    }
+
+    fun setAudioVoice(voiceProfile: AudioVoiceProfile) {
+        continuousAudioReader?.setVoice(voiceProfile.id)
+        _uiState.update { state ->
+            state.copy(
+                audioReaderState = state.audioReaderState.copy(
+                    selectedVoiceId = voiceProfile.id,
+                    selectedVoiceName = "${voiceProfile.localeLanguage} (${voiceProfile.name})"
+                )
+            )
+        }
+    }
+
+    fun getAvailableVoices(context: Context): List<AudioVoiceProfile> {
+        return getOrCreateAudioReader(context).getAvailableVoices()
+    }
+
     fun setAudioSleepTimer(preset: SleepTimerPreset) {
         continuousAudioReader?.setSleepTimer(preset)
         _uiState.update { state ->
@@ -1306,8 +1407,9 @@ class PdfViewerViewModel : ViewModel() {
         }
     }
 
-    fun stopAudioReader() {
+    fun stopAudioReader(context: Context? = null) {
         continuousAudioReader?.stop()
+        context?.let { AudioPlaybackService.stop(it) }
         _uiState.update { state ->
             state.copy(
                 audioReaderState = AudioReaderUiState(isActive = false)
@@ -1327,5 +1429,6 @@ class PdfViewerViewModel : ViewModel() {
         ttsManager = null
         continuousAudioReader?.release()
         continuousAudioReader = null
+        AudioPlaybackService.commander = null
     }
 }

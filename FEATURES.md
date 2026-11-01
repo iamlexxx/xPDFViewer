@@ -751,25 +751,41 @@ Transforms the core PDF reading experience into an offline, continuous document 
 1. **Continuous Speech Orchestration (`ContinuousAudioReader.kt`)**:
    - Chunks page text into sentences mapped directly to `SpatialWord` coordinate bounding boxes.
    - Sequential paragraph and sentence advancement with `UtteranceProgressListener`.
+   - **Word-by-Word "Karaoke" Tracking (`onRangeStart`)**: Tracks character offsets in real-time, mapping active speech to exact `SpatialWord` tokens.
+   - **PDF De-Hyphenation & Text Normalization (`AudioTextNormalizer.kt`)**: Automatically merges line-break hyphenated words (`inter-` + `national` $\to$ `international`), expands ligatures (`ﬁ`, `ﬂ`, `œ`), strips disruptive bracketed citations (`[1]`, `[14-16]`, `(Smith, 2024)`), and expands common abbreviations (`Dr.`, `e.g.`, `Fig.`, `vs.`, `&`, `%`).
    - **Header & Footer Margin Skipping**: Automatically detects and prunes running header text (top 8% margin `y <= 0.08f`), footer notices, and standalone page numbers (bottom 8% margin `y >= 0.92f`), preventing intrusive repetition during continuous listening.
    - Audio focus management (`AudioManager.requestAudioFocus`) automatically pausing speech on calls or interruptions.
-2. **Floating Playback Dock (`AudioPlayerDock.kt`)**:
+2. **Interactive "Tap-to-Speak" (Canvas Jump Navigation)**:
+   - Single-tapping any word or paragraph on the rendered page directly seeks speech playback to that sentence via normalized spatial hit-testing.
+3. **Voice Engine & Pitch Customizer (`AudioVoiceSettingsSheet.kt`)**:
+   - Querying and filtering installed offline TTS voice profiles.
+   - Pitch modulation slider/stepper (`0.80× Deep`, `1.00× Normal`, `1.20× Crisp`) and speech rate controls (`0.75×` to `2.0×`).
+4. **Background Media Service & Lock Screen Deck (`AudioPlaybackService.kt`)**:
+   - Android foreground service with `FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK` maintaining uninterrupted listening with screen turned off.
+   - System notification and lock screen controls with Previous, Play/Pause, Next, and Stop actions.
+5. **Floating Playback Dock (`AudioPlayerDock.kt`)**:
    - Sleek Material 3 floating pill pinned above bottom navigation in `PdfViewerScreen.kt`.
    - Play / Pause controls with buffering spinner, Skip Previous / Next sentence buttons.
+   - Voice and pitch settings sheet trigger button.
    - Dynamic speech rate stepper (`0.75×`, `1.0×`, `1.25×`, `1.5×`, `1.75×`, `2.0×`).
    - Sleep timer options: 15m, 30m, 45m, 60m, or End of Current Page.
-3. **Synchronized Spatial Highlighting (`PdfAudioHighlightCanvas.kt`)**:
-   - Real-time warm amber spotlight (`Color(0xFFF59E0B)`) with rounded corners tracking the sentence currently being spoken across lines.
-4. **Automated Viewport Tracking**:
+6. **Synchronized Dual-Tone Spatial Highlighting (`PdfAudioHighlightCanvas.kt`)**:
+   - Real-time warm amber background spotlight (`Color(0xFFF59E0B)`) over the entire active sentence.
+   - Crisp, high-contrast amber focus pill (`Color(0xFFD97706)`) tracking individual words being spoken in real-time (Kindle Immersion Reading style).
+7. **Automated Viewport Tracking**:
    - Viewport automatically animates scrolling to keep the active spoken sentence centered.
    - Seamlessly turns to the next page when the current page's text stream finishes.
 
 ### Key Files
 - `AudioReaderModels.kt` (`com.xpdfviewer.data`)
 - `ContinuousAudioReader.kt` (`com.xpdfviewer.speech`)
+- `AudioTextNormalizer.kt` (`com.xpdfviewer.speech`)
+- `AudioPlaybackService.kt` (`com.xpdfviewer.service`)
 - `AudioSentenceSegmenterTest.kt` (`com.xpdfviewer.speech`)
+- `AudioTextNormalizerTest.kt` (`com.xpdfviewer.speech`)
 - `PdfAudioHighlightCanvas.kt` (`com.xpdfviewer.ui.components`)
 - `AudioPlayerDock.kt` (`com.xpdfviewer.ui.components`)
+- `AudioVoiceSettingsSheet.kt` (`com.xpdfviewer.ui.components`)
 - `PdfTopBar.kt` (`com.xpdfviewer.ui.components`)
 - `PdfPageItem.kt` (`com.xpdfviewer.ui.components`)
 - `PdfViewerViewModel.kt` (`com.xpdfviewer.viewmodel`)

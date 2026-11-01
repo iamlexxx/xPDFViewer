@@ -12,6 +12,9 @@ import com.xpdfviewer.data.AudioPageContent
 import com.xpdfviewer.data.AudioPlaybackStatus
 import com.xpdfviewer.data.AudioSentence
 import com.xpdfviewer.data.AudioSpeed
+import com.xpdfviewer.data.AudioVoiceProfile
+import com.xpdfviewer.data.AudioWordToken
+import com.xpdfviewer.data.NormalizedRect
 import com.xpdfviewer.data.SleepTimerPreset
 import com.xpdfviewer.data.SpatialWord
 import kotlinx.coroutines.CoroutineScope
@@ -80,43 +83,86 @@ object AudioSentenceSegmenter {
             return AudioPageContent(pageIndex, emptyList(), "")
         }
 
-        val sentences = mutableListOf<AudioSentence>()
-        val fullTextBuilder = StringBuilder()
+        val processedWords = AudioTextNormalizer.processSpatialWords(candidateWords)
+        if (processedWords.isEmpty()) {
+            return AudioPageContent(pageIndex, emptyList(), "")
+        }
 
-        val currentWordList = mutableListOf<SpatialWord>()
+        val sentences = mutableListOf<AudioSentence>()
+        val pageFullTextBuilder = StringBuilder()
+
+        val currentTokens = mutableListOf<AudioWordToken>()
+        val currentIndices = mutableListOf<Int>()
+        val currentBounds = mutableListOf<NormalizedRect>()
+        val currentSentenceSpokenBuilder = StringBuilder()
+        var currentSentenceCharPos = 0
         var sentenceIndex = 0
+        var tokenIndex = 0
 
         fun flushSentence() {
-            if (currentWordList.isNotEmpty()) {
-                val sentenceText = currentWordList.joinToString(" ") { it.text }
-                val wordIndices = currentWordList.map { it.index }
-                val wordBounds = currentWordList.map { it.bounds }
-                sentences.add(
-                    AudioSentence(
-                        index = sentenceIndex++,
-                        text = sentenceText,
-                        wordIndices = wordIndices,
-                        wordBounds = wordBounds
+            if (currentTokens.isNotEmpty()) {
+                val sentenceSpokenText = currentSentenceSpokenBuilder.toString().trim()
+                if (sentenceSpokenText.isNotEmpty()) {
+                    sentences.add(
+                        AudioSentence(
+                            index = sentenceIndex++,
+                            text = sentenceSpokenText,
+                            wordTokens = currentTokens.toList(),
+                            wordIndices = currentIndices.toList(),
+                            wordBounds = currentBounds.toList()
+                        )
                     )
-                )
-                currentWordList.clear()
+                }
+                currentTokens.clear()
+                currentIndices.clear()
+                currentBounds.clear()
+                currentSentenceSpokenBuilder.clear()
+                currentSentenceCharPos = 0
             }
         }
 
-        for (word in candidateWords) {
-            currentWordList.add(word)
-            fullTextBuilder.append(word.text).append(" ")
-            val cleanText = word.text.trim()
-            if (cleanText.endsWith(".") || cleanText.endsWith("?") || cleanText.endsWith("!") ||
-                cleanText.endsWith(";") || cleanText.endsWith(":") || cleanText.endsWith("。") ||
-                cleanText.endsWith("！") || cleanText.endsWith("？")
-            ) {
+        for (pw in processedWords) {
+            val spoken = pw.spokenText.trim()
+            val raw = pw.rawText.trim()
+            pageFullTextBuilder.append(raw).append(" ")
+
+            for (w in pw.originalWords) {
+                currentIndices.add(w.index)
+            }
+            currentBounds.addAll(pw.bounds)
+
+            if (spoken.isNotEmpty()) {
+                val charStart = currentSentenceCharPos
+                val charEnd = currentSentenceCharPos + spoken.length
+                currentSentenceSpokenBuilder.append(spoken).append(" ")
+                currentSentenceCharPos += spoken.length + 1 // space separator
+
+                currentTokens.add(
+                    AudioWordToken(
+                        index = tokenIndex++,
+                        rawText = raw,
+                        spokenText = spoken,
+                        charStart = charStart,
+                        charEnd = charEnd,
+                        bounds = pw.bounds
+                    )
+                )
+            }
+
+            // Check sentence boundary
+            val cleanRaw = raw.trim()
+            val isEndingPunctuation = cleanRaw.endsWith(".") || cleanRaw.endsWith("?") || cleanRaw.endsWith("!") ||
+                    cleanRaw.endsWith(";") || cleanRaw.endsWith(":") || cleanRaw.endsWith("。") ||
+                    cleanRaw.endsWith("！") || cleanRaw.endsWith("？")
+
+            val isAbbr = AudioTextNormalizer.isNonSplittingAbbreviation(cleanRaw)
+            if (isEndingPunctuation && !isAbbr) {
                 flushSentence()
             }
         }
         flushSentence()
 
-        return AudioPageContent(pageIndex, sentences, fullTextBuilder.toString().trim())
+        return AudioPageContent(pageIndex, sentences, pageFullTextBuilder.toString().trim())
     }
 }
 
@@ -130,6 +176,8 @@ class ContinuousAudioReader(
     private var audioFocusRequest: AudioFocusRequest? = null
 
     private var currentSpeed: AudioSpeed = AudioSpeed.SPEED_1_0
+    private var currentPitch: Float = 1.0f
+    private var currentVoiceId: String? = null
     private var currentSleepTimer: SleepTimerPreset = SleepTimerPreset.OFF
     private var timerJob: Job? = null
     private var remainingSeconds = 0
@@ -141,6 +189,7 @@ class ContinuousAudioReader(
 
     // Listeners
     var onSentenceChanged: ((pageIndex: Int, sentence: AudioSentence, totalSentences: Int) -> Unit)? = null
+    var onWordChanged: ((pageIndex: Int, wordToken: AudioWordToken) -> Unit)? = null
     var onPlaybackStatusChanged: ((AudioPlaybackStatus) -> Unit)? = null
     var onPageCompleted: ((pageIndex: Int) -> Unit)? = null
     var onSleepTimerTick: ((remainingSeconds: Int) -> Unit)? = null
@@ -164,6 +213,7 @@ class ContinuousAudioReader(
                 isInitialized = true
                 tts?.language = Locale.getDefault()
                 tts?.setSpeechRate(currentSpeed.speed)
+                tts?.setPitch(currentPitch)
                 tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {
                         if (utteranceId == currentUtteranceId) {
@@ -197,6 +247,14 @@ class ContinuousAudioReader(
                             updateStatus(AudioPlaybackStatus.PAUSED)
                         }
                     }
+
+                    override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                        if (utteranceId == currentUtteranceId) {
+                            scope.launch(Dispatchers.Main) {
+                                handleWordRange(start, end)
+                            }
+                        }
+                    }
                 })
             } else {
                 updateStatus(AudioPlaybackStatus.IDLE)
@@ -226,6 +284,21 @@ class ContinuousAudioReader(
         playCurrentSentence()
     }
 
+    private fun handleWordRange(start: Int, end: Int) {
+        val content = activePageContent ?: return
+        if (currentSentenceIdx !in content.sentences.indices) return
+        val sentence = content.sentences[currentSentenceIdx]
+        if (sentence.wordTokens.isEmpty()) return
+
+        val matchingToken = sentence.wordTokens.firstOrNull { token ->
+            (start in token.charStart until token.charEnd) || (token.charStart in start..end)
+        } ?: sentence.wordTokens.minByOrNull { Math.abs(it.charStart - start) }
+
+        if (matchingToken != null) {
+            onWordChanged?.invoke(content.pageIndex, matchingToken)
+        }
+    }
+
     private fun playCurrentSentence() {
         val content = activePageContent ?: return
         if (currentSentenceIdx !in content.sentences.indices) {
@@ -235,6 +308,11 @@ class ContinuousAudioReader(
 
         val sentence = content.sentences[currentSentenceIdx]
         onSentenceChanged?.invoke(content.pageIndex, sentence, content.sentences.size)
+
+        // Highlight initial word if available
+        sentence.wordTokens.firstOrNull()?.let { firstToken ->
+            onWordChanged?.invoke(content.pageIndex, firstToken)
+        }
 
         requestAudioFocus()
 
@@ -247,6 +325,7 @@ class ContinuousAudioReader(
 
         updateStatus(AudioPlaybackStatus.BUFFERING)
         tts?.setSpeechRate(currentSpeed.speed)
+        tts?.setPitch(currentPitch)
         tts?.speak(sentence.text, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
     }
 
@@ -308,6 +387,40 @@ class ContinuousAudioReader(
     fun setSpeed(speed: AudioSpeed) {
         currentSpeed = speed
         tts?.setSpeechRate(speed.speed)
+    }
+
+    fun setPitch(pitch: Float) {
+        currentPitch = pitch
+        tts?.setPitch(pitch)
+    }
+
+    fun setVoice(voiceId: String) {
+        currentVoiceId = voiceId
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val targetVoice = tts?.voices?.firstOrNull { it.name == voiceId }
+            if (targetVoice != null) {
+                tts?.voice = targetVoice
+            }
+        }
+    }
+
+    fun getAvailableVoices(): List<AudioVoiceProfile> {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return tts?.voices
+                ?.filter { !it.isNetworkConnectionRequired }
+                ?.map {
+                    AudioVoiceProfile(
+                        id = it.name,
+                        name = it.name.substringAfterLast("-", it.name),
+                        localeLanguage = it.locale.displayLanguage,
+                        localeCountry = it.locale.displayCountry,
+                        isNetworkRequired = it.isNetworkConnectionRequired,
+                        quality = it.quality
+                    )
+                }
+                ?.sortedBy { it.localeLanguage } ?: emptyList()
+        }
+        return emptyList()
     }
 
     fun setSleepTimer(preset: SleepTimerPreset) {

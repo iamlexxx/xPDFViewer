@@ -65,6 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xpdfviewer.ui.components.AudioPlayerDock
+import com.xpdfviewer.ui.components.AudioVoiceSettingsSheet
 import com.xpdfviewer.ui.components.DeletePageDialog
 import com.xpdfviewer.ui.components.DocumentOutlineSheet
 import com.xpdfviewer.ui.components.ExtractPageDialog
@@ -87,6 +88,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun PdfViewerScreen(
     viewModel: PdfViewerViewModel,
@@ -136,6 +138,7 @@ fun PdfViewerScreen(
 
     var isSignPdfOpen by remember { mutableStateOf(false) }
     var isPageOrganizerOpen by remember { mutableStateOf(false) }
+    var showVoiceSettingsSheet by remember { mutableStateOf(false) }
     val pageOrganizerViewModel: PageOrganizerViewModel = viewModel()
 
     // Hardware back navigation returns to library view or exits text selection / search
@@ -496,7 +499,8 @@ fun PdfViewerScreen(
                                 onSelectSpeed = { viewModel.setAudioSpeed(it) },
                                 onSelectSleepTimer = { viewModel.setAudioSleepTimer(it) },
                                 onToggleSkipHeaderFooter = { viewModel.toggleSkipHeaderFooter(context) },
-                                onClose = { viewModel.stopAudioReader() },
+                                onOpenVoiceSettings = { showVoiceSettingsSheet = true },
+                                onClose = { viewModel.stopAudioReader(context) },
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .navigationBarsPadding()
@@ -506,6 +510,20 @@ fun PdfViewerScreen(
                     }
                 }
             }
+        }
+
+        // Voice & Pitch Settings Bottom Sheet
+        if (showVoiceSettingsSheet) {
+            AudioVoiceSettingsSheet(
+                availableVoices = viewModel.getAvailableVoices(context),
+                selectedVoiceId = uiState.audioReaderState.selectedVoiceId,
+                currentPitch = uiState.audioReaderState.pitch,
+                currentSpeed = uiState.audioReaderState.speed,
+                onSelectVoice = { viewModel.setAudioVoice(it) },
+                onSelectPitch = { viewModel.setAudioPitch(it) },
+                onSelectSpeed = { viewModel.setAudioSpeed(it) },
+                onDismiss = { showVoiceSettingsSheet = false }
+            )
         }
 
         // Auto-scroll when Continuous Audio Reader advances page
