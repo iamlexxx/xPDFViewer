@@ -37,6 +37,8 @@ class AudioPlaybackService : Service() {
         const val ACTION_SKIP_NEXT = "com.xpdfviewer.action.AUDIO_SKIP_NEXT"
         const val ACTION_SKIP_PREV = "com.xpdfviewer.action.AUDIO_SKIP_PREV"
         const val ACTION_STOP = "com.xpdfviewer.action.AUDIO_STOP"
+        const val ACTION_STOP_SERVICE = "com.xpdfviewer.action.AUDIO_STOP_SERVICE"
+        const val ACTION_USER_STOP = "com.xpdfviewer.action.AUDIO_USER_STOP"
 
         const val EXTRA_TITLE = "extra_title"
         const val EXTRA_PAGE_INFO = "extra_page_info"
@@ -70,7 +72,7 @@ class AudioPlaybackService : Service() {
 
         fun stop(context: Context) {
             val intent = Intent(context, AudioPlaybackService::class.java).apply {
-                action = ACTION_STOP
+                action = ACTION_STOP_SERVICE
             }
             context.startService(intent)
         }
@@ -80,6 +82,7 @@ class AudioPlaybackService : Service() {
     private var currentPageInfo: String = "Playing"
     private var isPlaying: Boolean = true
     private var mediaSession: MediaSession? = null
+    private var isStopping: Boolean = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -120,6 +123,7 @@ class AudioPlaybackService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
+                isStopping = false
                 currentTitle = intent.getStringExtra(EXTRA_TITLE) ?: currentTitle
                 currentPageInfo = intent.getStringExtra(EXTRA_PAGE_INFO) ?: currentPageInfo
                 isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, true)
@@ -127,11 +131,13 @@ class AudioPlaybackService : Service() {
                 startInForeground()
             }
             ACTION_UPDATE -> {
-                currentTitle = intent.getStringExtra(EXTRA_TITLE) ?: currentTitle
-                currentPageInfo = intent.getStringExtra(EXTRA_PAGE_INFO) ?: currentPageInfo
-                isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, isPlaying)
-                updateMediaSessionState()
-                updateNotification()
+                if (!isStopping) {
+                    currentTitle = intent.getStringExtra(EXTRA_TITLE) ?: currentTitle
+                    currentPageInfo = intent.getStringExtra(EXTRA_PAGE_INFO) ?: currentPageInfo
+                    isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, isPlaying)
+                    updateMediaSessionState()
+                    updateNotification()
+                }
             }
             ACTION_PLAY_PAUSE -> {
                 commander?.onTogglePlayPause()
@@ -142,8 +148,12 @@ class AudioPlaybackService : Service() {
             ACTION_SKIP_PREV -> {
                 commander?.onSkipPrevious()
             }
-            ACTION_STOP -> {
+            ACTION_USER_STOP -> {
                 commander?.onStop()
+                stopForegroundService()
+            }
+            ACTION_STOP_SERVICE, ACTION_STOP -> {
+                // Programmatic stop from ViewModel: do NOT echo back to commander.onStop() to prevent infinite loops
                 stopForegroundService()
             }
         }
@@ -187,6 +197,8 @@ class AudioPlaybackService : Service() {
     }
 
     private fun stopForegroundService() {
+        isStopping = true
+        mediaSession?.isActive = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
@@ -224,7 +236,7 @@ class AudioPlaybackService : Service() {
         val nextIntent = Intent(this, AudioPlaybackService::class.java).apply { action = ACTION_SKIP_NEXT }
         val nextPending = PendingIntent.getService(this, 3, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-        val stopIntent = Intent(this, AudioPlaybackService::class.java).apply { action = ACTION_STOP }
+        val stopIntent = Intent(this, AudioPlaybackService::class.java).apply { action = ACTION_USER_STOP }
         val stopPending = PendingIntent.getService(this, 4, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val playPauseIcon = if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play

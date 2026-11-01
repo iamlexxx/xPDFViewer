@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/PdfViewerViewModel.kt": {
-    "mtime": 1793529131.0529313,
-    "seen": 1793529265.1532755,
-    "ast_hash": "6f559c3ff3e4ec02abe4b02f040dd77c",
+    "mtime": 1793530457.8170888,
+    "seen": 1793530511.7835867,
+    "ast_hash": "79c3c981d026dddae09062bb7d4db65a",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/SignPdfViewModel.kt": {
@@ -1524,9 +1524,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/ContinuousAudioReader.kt": {
-    "mtime": 1793523319.8229408,
-    "seen": 1793523633.4697292,
-    "ast_hash": "02ddd47f606f4b5edd5192c298f3b067",
+    "mtime": 1793530382.4605534,
+    "seen": 1793530511.7835867,
+    "ast_hash": "5d6201895f6e3e789e85e085705cd289",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/AudioPlayerDock.kt": {
@@ -1548,9 +1548,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/service/AudioPlaybackService.kt": {
-    "mtime": 1793529205.9858227,
-    "seen": 1793529265.1532755,
-    "ast_hash": "9f3962e0fe2adc1229c907a493ac4b52",
+    "mtime": 1793530357.1602237,
+    "seen": 1793530511.7835867,
+    "ast_hash": "da2c404d794e0a73fbf909617964fd5a",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/AudioTextNormalizer.kt": {

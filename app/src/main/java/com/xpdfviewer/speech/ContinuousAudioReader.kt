@@ -351,6 +351,7 @@ class ContinuousAudioReader(
     }
 
     fun pause() {
+        currentUtteranceId = null
         tts?.stop()
         updateStatus(AudioPlaybackStatus.PAUSED)
     }
@@ -446,6 +447,9 @@ class ContinuousAudioReader(
     }
 
     fun stop() {
+        currentUtteranceId = null
+        activePageContent = null
+        currentSentenceIdx = 0
         tts?.stop()
         abandonAudioFocus()
         timerJob?.cancel()

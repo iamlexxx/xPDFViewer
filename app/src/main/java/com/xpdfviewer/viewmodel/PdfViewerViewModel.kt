@@ -65,6 +65,7 @@ class PdfViewerViewModel : ViewModel() {
     private var continuousAudioReader: ContinuousAudioReader? = null
     private var currentAudioPageContent: AudioPageContent? = null
     private var searchJob: Job? = null
+    private var audioPageJob: Job? = null
 
     fun initialize(context: Context) {
         if (recentRepository == null) {
@@ -126,7 +127,13 @@ class PdfViewerViewModel : ViewModel() {
                 addBookmarkDialogState = AddBookmarkDialogState(),
                 searchState = PdfSearchState(),
                 formState = DocumentFormState(),
-                audioReaderState = AudioReaderUiState()
+                audioReaderState = it.audioReaderState.copy(
+                    isActive = false,
+                    status = AudioPlaybackStatus.IDLE,
+                    activeSentenceWordBounds = emptyList(),
+                    activeWordBounds = emptyList(),
+                    activeWordText = null
+                )
             )
         }
         stopSpeaking()
@@ -1272,10 +1279,13 @@ class PdfViewerViewModel : ViewModel() {
             val startPage = (_uiState.value.currentPage - 1).coerceAtLeast(0)
             _uiState.update {
                 it.copy(
-                    audioReaderState = AudioReaderUiState(
+                    audioReaderState = it.audioReaderState.copy(
                         isActive = true,
                         currentPageIndex = startPage,
-                        status = AudioPlaybackStatus.BUFFERING
+                        status = AudioPlaybackStatus.BUFFERING,
+                        activeSentenceWordBounds = emptyList(),
+                        activeWordBounds = emptyList(),
+                        activeWordText = null
                     )
                 )
             }
@@ -1291,7 +1301,8 @@ class PdfViewerViewModel : ViewModel() {
 
     private fun loadAndReadPage(context: Context, pageIndex: Int, startSentenceIndex: Int = 0) {
         val docUri = _uiState.value.uri ?: return
-        viewModelScope.launch {
+        audioPageJob?.cancel()
+        audioPageJob = viewModelScope.launch {
             _uiState.update { state ->
                 state.copy(
                     currentPage = pageIndex + 1,
@@ -1305,11 +1316,14 @@ class PdfViewerViewModel : ViewModel() {
             }
 
             val spatialData = SpatialTextExtractor.extractSpatialText(context, docUri, pageIndex)
+            if (!_uiState.value.audioReaderState.isActive) return@launch
+
             val reader = getOrCreateAudioReader(context)
             val skipHeaders = _uiState.value.audioReaderState.skipHeaderFooter
             val pageContent = reader.segmentIntoSentences(pageIndex, spatialData.words, skipHeaders)
             currentAudioPageContent = pageContent
 
+            if (!_uiState.value.audioReaderState.isActive) return@launch
             reader.loadAndPlayPage(pageContent, startSentenceIndex)
         }
     }
@@ -1422,11 +1436,23 @@ class PdfViewerViewModel : ViewModel() {
     }
 
     fun stopAudioReader(context: Context? = null) {
+        val wasActive = _uiState.value.audioReaderState.isActive
+        audioPageJob?.cancel()
+        audioPageJob = null
+        currentAudioPageContent = null
         continuousAudioReader?.stop()
-        context?.let { AudioPlaybackService.stop(it) }
+        if (wasActive) {
+            context?.let { AudioPlaybackService.stop(it) }
+        }
         _uiState.update { state ->
             state.copy(
-                audioReaderState = AudioReaderUiState(isActive = false)
+                audioReaderState = state.audioReaderState.copy(
+                    isActive = false,
+                    status = AudioPlaybackStatus.IDLE,
+                    activeSentenceWordBounds = emptyList(),
+                    activeWordBounds = emptyList(),
+                    activeWordText = null
+                )
             )
         }
     }
@@ -1435,6 +1461,8 @@ class PdfViewerViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+        audioPageJob?.cancel()
+        audioPageJob = null
         searchJob?.cancel()
         searchJob = null
         pdfRenderer?.close()
