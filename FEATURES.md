@@ -32,7 +32,7 @@ High-fidelity, smooth PDF viewing engine designed around Material 3 and edge-to-
 - **Floating Reading Navigation Menu (`FloatingViewerNavigationMenu.kt`)**: Ergonomic glassmorphic floating pill docked at bottom center housing the 5 core reading tools in an accessible, thumb-friendly cluster:
   1. **Outline & TOC (`MenuBook`)**: Opens document hierarchy and table of contents.
   2. **Bookmark (`Bookmark` / `BookmarkBorder`)**: One-tap toggle for current page bookmark with active state glow.
-  3. **Audiobook (`Headphones`)**: Toggles continuous speech playback with real-time word karaoke highlighting.
+  3. **Speech Audio Reader (`VolumeUp`)**: Toggles continuous speech playback with real-time word karaoke highlighting.
   4. **Reading Mode (`Palette`)**: Opens eye comfort presets (Night, Sepia, High Contrast, Grayscale).
   5. **Page Grid (`GridView`)**: Launches full-screen page organizer and thumbnail sheet.
 - **Distraction-Free Immersion Mode**: Tapping the document viewport seamlessly animates both the top bar and floating navigation pill in and out together.

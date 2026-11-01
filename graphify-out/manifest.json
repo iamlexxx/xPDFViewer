@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/PdfTopBar.kt": {
-    "mtime": 1793524150.568961,
-    "seen": 1793524463.2963338,
-    "ast_hash": "a10d64ea3d65febaaf068a5ccdee994e",
+    "mtime": 1793544226.7315843,
+    "seen": 1793544287.0434806,
+    "ast_hash": "6b4d265c30b1fcdb20c82ecfa4f90ce8",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/SaveChoiceDialog.kt": {
@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "FEATURES.md": {
-    "mtime": 1793524043.2946026,
-    "seen": 1793524109.247464,
-    "ast_hash": "3e1f2675ce9b7a97a5b69392e875758d",
+    "mtime": 1793544242.2853339,
+    "seen": 1793544287.0434806,
+    "ast_hash": "80308db8a5666bb90971baaff45c334c",
     "semantic_hash": ""
   },
   "GEMINI.md": {
@@ -1530,9 +1530,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/AudioPlayerDock.kt": {
-    "mtime": 1793531842.6525354,
-    "seen": 1793532792.4112432,
-    "ast_hash": "b739a91d2233c6b1753c09713b160c3f",
+    "mtime": 1793544218.9279592,
+    "seen": 1793544287.0418172,
+    "ast_hash": "d7743d54fc2ebade2ac2b578d55b813f",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/PdfAudioHighlightCanvas.kt": {
@@ -1578,9 +1578,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/FloatingViewerNavigationMenu.kt": {
-    "mtime": 1793524148.4816084,
-    "seen": 1793524463.2963338,
-    "ast_hash": "fbb7a12faf5716e2530f08ac393cd48f",
+    "mtime": 1793544204.457047,
+    "seen": 1793544287.0434806,
+    "ast_hash": "590d4bb59c593701d8bdade41ac37a4b",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/AudioProsodyEngine.kt": {
@@ -1614,8 +1614,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/PiperOnnxSynthesizer.kt": {
-    "mtime": 1793542775.0946145,
-    "seen": 1793542896.1779275,
+    "mtime": 1793543490.0626361,
+    "seen": 1793543766.9494922,
     "ast_hash": "5bdb8a14fa486417fc86f95bcb467437",
     "semantic_hash": ""
   },

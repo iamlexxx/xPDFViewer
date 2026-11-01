@@ -18,10 +18,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -103,10 +103,10 @@ fun FloatingViewerNavigationMenu(
                     }
                 )
 
-                // 3. Continuous Audio Reader (Audiobook Mode)
+                // 3. Continuous Audio Reader (Speech Audio Mode)
                 FloatingNavIconButton(
-                    icon = Icons.Default.Headphones,
-                    contentDescription = "Audiobook reader mode",
+                    icon = Icons.AutoMirrored.Filled.VolumeUp,
+                    contentDescription = "Read aloud speech audio mode",
                     isActive = isAudioReaderActive,
                     activeColor = MaterialTheme.colorScheme.primary,
                     onClick = {
