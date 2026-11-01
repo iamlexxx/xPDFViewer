@@ -45,6 +45,8 @@ import com.xpdfviewer.pdf.PdfTextExtractor
 import com.xpdfviewer.pdf.SpatialTextExtractor
 import com.xpdfviewer.speech.ContinuousAudioReader
 import com.xpdfviewer.speech.TextToSpeechManager
+import com.xpdfviewer.speech.piper.PiperDownloadStatus
+import com.xpdfviewer.speech.piper.PiperModelManager
 import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -74,17 +76,59 @@ class PdfViewerViewModel : ViewModel() {
             val savedReadingMode = recentRepository?.getSavedReadingMode() ?: ReadingMode.DEFAULT
             val savedPitch = recentRepository?.getSavedVoicePitch() ?: 1.0f
             val savedVoiceId = recentRepository?.getSavedVoiceId()
+            val isPiperReady = PiperModelManager.isModelInstalled(context)
             _uiState.update {
                 it.copy(
                     readingMode = savedReadingMode,
                     audioReaderState = it.audioReaderState.copy(
                         pitch = savedPitch,
-                        selectedVoiceId = savedVoiceId
+                        selectedVoiceId = savedVoiceId,
+                        isPiperStudioReady = isPiperReady
                     )
                 )
             }
             // Pre-warm audio reader so TTS engine binds in background before first user tap
             getOrCreateAudioReader(context)
+
+            // Collect on-device Piper neural voice model status
+            viewModelScope.launch {
+                PiperModelManager.downloadStatuses.collect { statusesMap ->
+                    val isAnyReady = PiperModelManager.isModelInstalled(context)
+                    val activeDownloadingVoice = statusesMap.entries.firstOrNull {
+                        it.value is PiperDownloadStatus.Downloading || it.value is PiperDownloadStatus.Extracting
+                    }
+                    val isDownloading = activeDownloadingVoice != null
+                    val activeStatus = activeDownloadingVoice?.value
+                    val progress = (activeStatus as? PiperDownloadStatus.Downloading)?.progress
+                    val msg = when (activeStatus) {
+                        is PiperDownloadStatus.Downloading -> "Downloading: ${(activeStatus.progress * 100).toInt()}% (${activeStatus.downloadedBytes / (1024 * 1024)}MB / ${activeStatus.totalBytes / (1024 * 1024)}MB)"
+                        is PiperDownloadStatus.Extracting -> "Extracting studio neural model..."
+                        is PiperDownloadStatus.Ready -> "Studio Neural Voice Ready"
+                        is PiperDownloadStatus.Error -> "Download error: ${activeStatus.message}"
+                        else -> null
+                    }
+                    _uiState.update { state ->
+                        state.copy(
+                            audioReaderState = state.audioReaderState.copy(
+                                isPiperStudioReady = isAnyReady,
+                                isPiperDownloading = isDownloading,
+                                piperDownloadProgress = progress,
+                                piperStatusMessage = msg,
+                                studioVoiceStatuses = statusesMap
+                            )
+                        )
+                    }
+                    val newlyReady = statusesMap.entries.firstOrNull { it.value is PiperDownloadStatus.Ready }
+                    if (newlyReady != null) {
+                        val reader = getOrCreateAudioReader(context)
+                        val voices = reader.getAvailableVoices()
+                        val piperVoice = voices.firstOrNull { it.id == newlyReady.key }
+                        if (piperVoice != null && _uiState.value.audioReaderState.selectedVoiceId != piperVoice.id) {
+                            setAudioVoice(piperVoice)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1431,6 +1475,28 @@ class PdfViewerViewModel : ViewModel() {
 
     fun getAvailableVoices(context: Context): List<AudioVoiceProfile> {
         return getOrCreateAudioReader(context).getAvailableVoices()
+    }
+
+    fun downloadPiperStudioVoice(context: Context, voiceId: String? = null) {
+        val voice = PiperModelManager.getVoiceById(voiceId) ?: PiperModelManager.DEFAULT_VOICE
+        PiperModelManager.startDownload(context.applicationContext, viewModelScope, voice)
+    }
+
+    fun cancelPiperDownload(voiceId: String? = null) {
+        PiperModelManager.cancelDownload(voiceId)
+    }
+
+    fun deletePiperStudioVoice(context: Context, voiceId: String) {
+        PiperModelManager.deleteVoice(context, voiceId)
+        val reader = getOrCreateAudioReader(context)
+        val remaining = reader.getAvailableVoices()
+        if (_uiState.value.audioReaderState.selectedVoiceId == voiceId) {
+            val fallback = remaining.firstOrNull { it.isStudioNeural && PiperModelManager.isVoiceInstalled(context, it.id) }
+                ?: remaining.firstOrNull()
+            if (fallback != null) {
+                setAudioVoice(fallback)
+            }
+        }
     }
 
     fun setAudioSleepTimer(preset: SleepTimerPreset) {

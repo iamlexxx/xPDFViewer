@@ -1,5 +1,7 @@
 package com.xpdfviewer.data
 
+import com.xpdfviewer.speech.piper.PiperDownloadStatus
+
 enum class AudioPlaybackStatus {
     IDLE,
     BUFFERING,
@@ -59,7 +61,8 @@ data class AudioVoiceProfile(
     val isNetworkRequired: Boolean = false,
     val quality: Int = 300,
     val isHighDefinition: Boolean = false,
-    val gender: String? = null
+    val gender: String? = null,
+    val isStudioNeural: Boolean = false
 )
 
 data class AudioSentence(
@@ -98,7 +101,12 @@ data class AudioReaderUiState(
     val sleepTimer: SleepTimerPreset = SleepTimerPreset.OFF,
     val sleepTimerRemainingSeconds: Int = 0,
     val isAutoScrollEnabled: Boolean = true,
-    val skipHeaderFooter: Boolean = true
+    val skipHeaderFooter: Boolean = true,
+    val isPiperStudioReady: Boolean = false,
+    val isPiperDownloading: Boolean = false,
+    val piperDownloadProgress: Float? = null,
+    val piperStatusMessage: String? = null,
+    val studioVoiceStatuses: Map<String, PiperDownloadStatus> = emptyMap()
 ) {
     val isPlaying: Boolean get() = status == AudioPlaybackStatus.PLAYING
 }

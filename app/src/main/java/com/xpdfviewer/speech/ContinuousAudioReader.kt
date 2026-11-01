@@ -18,6 +18,8 @@ import com.xpdfviewer.data.AudioWordToken
 import com.xpdfviewer.data.NormalizedRect
 import com.xpdfviewer.data.SleepTimerPreset
 import com.xpdfviewer.data.SpatialWord
+import com.xpdfviewer.speech.piper.PiperModelManager
+import com.xpdfviewer.speech.piper.PiperOnnxSynthesizer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -174,6 +176,8 @@ class ContinuousAudioReader(
     private var tts: TextToSpeech? = null
     private var isInitialized = false
     private var pendingPlayOnReady = false
+    private val piperSynthesizer = PiperOnnxSynthesizer(context, scope)
+    private var isPiperModeActive = false
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
 
@@ -282,6 +286,22 @@ class ContinuousAudioReader(
     }
 
     private fun autoSelectBestVoice() {
+        if (PiperModelManager.isStudioVoice(currentVoiceId)) {
+            isPiperModeActive = true
+            return
+        }
+
+        if (currentVoiceId.isNullOrBlank()) {
+            val installedVoices = PiperModelManager.getInstalledVoices(context)
+            if (installedVoices.isNotEmpty()) {
+                val preferred = installedVoices.firstOrNull { it.id == PiperModelManager.DEFAULT_VOICE.id }
+                    ?: installedVoices.first()
+                currentVoiceId = preferred.id
+                isPiperModeActive = true
+                return
+            }
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return
         val allVoices = tts?.voices ?: return
         if (allVoices.isEmpty()) return
@@ -360,13 +380,6 @@ class ContinuousAudioReader(
             return
         }
 
-        // If TTS service is still binding in background, defer until onTtsInit
-        if (!isInitialized) {
-            pendingPlayOnReady = true
-            updateStatus(AudioPlaybackStatus.BUFFERING)
-            return
-        }
-
         val sentence = content.sentences[currentSentenceIdx]
         onSentenceChanged?.invoke(content.pageIndex, sentence, content.sentences.size)
 
@@ -376,6 +389,43 @@ class ContinuousAudioReader(
         }
 
         requestAudioFocus()
+
+        val isPiper = (PiperModelManager.isStudioVoice(currentVoiceId) || isPiperModeActive) &&
+                PiperModelManager.isModelInstalled(context)
+
+        if (isPiper) {
+            currentUtteranceId = null
+            tts?.stop()
+            updateStatus(AudioPlaybackStatus.BUFFERING)
+
+            piperSynthesizer.speak(
+                sentence = sentence,
+                speed = currentSpeed.speed,
+                voiceId = currentVoiceId,
+                onStart = {
+                    updateStatus(AudioPlaybackStatus.PLAYING)
+                },
+                onWordProgress = { token ->
+                    onWordChanged?.invoke(content.pageIndex, token)
+                },
+                onDone = {
+                    scope.launch(Dispatchers.Main) {
+                        advanceNextSentence()
+                    }
+                },
+                onError = {
+                    updateStatus(AudioPlaybackStatus.PAUSED)
+                }
+            )
+            return
+        }
+
+        // If TTS service is still binding in background, defer until onTtsInit
+        if (!isInitialized) {
+            pendingPlayOnReady = true
+            updateStatus(AudioPlaybackStatus.BUFFERING)
+            return
+        }
 
         val utteranceId = "audio_read_${content.pageIndex}_${sentence.index}_${UUID.randomUUID()}"
         currentUtteranceId = utteranceId
@@ -436,12 +486,18 @@ class ContinuousAudioReader(
 
     fun pause() {
         currentUtteranceId = null
+        if (isPiperModeActive) {
+            piperSynthesizer.pause()
+        }
         tts?.stop()
         updateStatus(AudioPlaybackStatus.PAUSED)
     }
 
     fun resume() {
-        if (activePageContent != null) {
+        if (isPiperModeActive && piperSynthesizer.isPaused) {
+            piperSynthesizer.resume()
+            updateStatus(AudioPlaybackStatus.PLAYING)
+        } else if (activePageContent != null) {
             playCurrentSentence()
         }
     }
@@ -449,6 +505,7 @@ class ContinuousAudioReader(
     fun skipNext() {
         val content = activePageContent ?: return
         if (currentSentenceIdx < content.sentences.size - 1) {
+            piperSynthesizer.stop()
             tts?.stop()
             currentSentenceIdx++
             playCurrentSentence()
@@ -460,6 +517,7 @@ class ContinuousAudioReader(
     fun skipPrevious() {
         val content = activePageContent ?: return
         if (currentSentenceIdx > 0) {
+            piperSynthesizer.stop()
             tts?.stop()
             currentSentenceIdx--
             playCurrentSentence()
@@ -481,18 +539,42 @@ class ContinuousAudioReader(
 
     fun setVoice(voiceId: String) {
         currentVoiceId = voiceId
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val targetVoice = tts?.voices?.firstOrNull { it.name == voiceId }
-            if (targetVoice != null) {
-                tts?.voice = targetVoice
+        if (PiperModelManager.isStudioVoice(voiceId)) {
+            isPiperModeActive = true
+            scope.launch {
+                piperSynthesizer.initialize(voiceId)
+            }
+        } else {
+            isPiperModeActive = false
+            piperSynthesizer.stop()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                val targetVoice = tts?.voices?.firstOrNull { it.name == voiceId }
+                if (targetVoice != null) {
+                    tts?.voice = targetVoice
+                }
             }
         }
     }
 
     fun getAvailableVoices(): List<AudioVoiceProfile> {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val voices = tts?.voices ?: return emptyList()
-            return voices
+        val studioVoices = PiperModelManager.ALL_STUDIO_VOICES.map { voice ->
+            val isInstalled = PiperModelManager.isVoiceInstalled(context, voice.id)
+            AudioVoiceProfile(
+                id = voice.id,
+                name = "${voice.flagEmoji} ${voice.name} (${voice.accentTag})",
+                localeLanguage = voice.langCode.substringBefore('-'),
+                localeCountry = voice.langCode.substringAfter('-', "").uppercase(),
+                isNetworkRequired = false,
+                quality = if (isInstalled) 1000 else 900,
+                isHighDefinition = true,
+                gender = voice.speakerRole,
+                isStudioNeural = true
+            )
+        }
+
+        val systemVoices = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val voices = tts?.voices ?: emptyList()
+            voices
                 .filter { !it.isNetworkConnectionRequired }
                 .map { parseVoiceInfo(it) }
                 .sortedWith(
@@ -501,8 +583,11 @@ class ContinuousAudioReader(
                         .thenBy { it.localeLanguage }
                         .thenBy { it.name }
                 )
+        } else {
+            emptyList()
         }
-        return emptyList()
+
+        return studioVoices + systemVoices
     }
 
     companion object {
@@ -576,6 +661,7 @@ class ContinuousAudioReader(
         currentUtteranceId = null
         activePageContent = null
         currentSentenceIdx = 0
+        piperSynthesizer.stop()
         tts?.stop()
         abandonAudioFocus()
         timerJob?.cancel()
@@ -585,6 +671,7 @@ class ContinuousAudioReader(
 
     fun release() {
         stop()
+        piperSynthesizer.release()
         tts?.shutdown()
         tts = null
     }
