@@ -353,18 +353,6 @@
     "ast_hash": "393c4f769b3fd434a0916d125f48b038",
     "semantic_hash": ""
   },
-  ".claude/settings.json": {
-    "mtime": 1793502237.7715294,
-    "seen": 1793502367.800485,
-    "ast_hash": "3ac995fbf93552a991ecab9b63f776aa",
-    "semantic_hash": ""
-  },
-  ".gemini/settings.json": {
-    "mtime": 1793502319.2739315,
-    "seen": 1793502367.800485,
-    "ast_hash": "1b426b2bd9374194fc8c397eafb701f9",
-    "semantic_hash": ""
-  },
   "app/build.gradle.kts": {
     "mtime": 1792326544.5600216,
     "seen": 1793502367.800485,
@@ -684,8 +672,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/PdfViewerViewModel.kt": {
-    "mtime": 1793516509.41618,
-    "seen": 1793516607.4038548,
+    "mtime": 1793516776.152514,
+    "seen": 1793517295.229926,
     "ast_hash": "ca55fe5a9afd2a4b3c49950de99c9c4c",
     "semantic_hash": ""
   },
@@ -1175,12 +1163,6 @@
     "ast_hash": "3d8fb3c933d89bb2d87060ae48ea1461",
     "semantic_hash": ""
   },
-  ".claude/CLAUDE.md": {
-    "mtime": 1793502237.7675512,
-    "seen": 1793502367.800485,
-    "ast_hash": "9b31786b637be3c13978bec4c2330752",
-    "semantic_hash": ""
-  },
   "CHANGELOG.md": {
     "mtime": 1793515969.0718105,
     "seen": 1793515989.1468189,
@@ -1254,8 +1236,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/TextToSpeechManager.kt": {
-    "mtime": 1793516498.2546904,
-    "seen": 1793516607.4028556,
+    "mtime": 1793516776.0727446,
+    "seen": 1793517295.229926,
     "ast_hash": "8d18e119e88c2be0f7b4d41635364bde",
     "semantic_hash": ""
   },

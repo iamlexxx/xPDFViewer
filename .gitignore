@@ -74,6 +74,11 @@ output-metadata.json
 .cursor/
 .copilot/
 
+# Graphify local cache & ephemeral locks
+graphify-out/cache/
+graphify-out/*.lock
+graphify-out/.*.lock
+
 # ==============================================================================
 # Python & Script Caches (Assistant Skills & Automation)
 # ==============================================================================
