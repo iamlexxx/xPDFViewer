@@ -86,6 +86,7 @@ dependencies {
     implementation("androidx.camera:camera-view:$cameraVersion")
 
     debugImplementation(libs.androidx.ui.tooling)
+    testImplementation("junit:junit:4.13.2")
 }
 
 // Satisfy Android Studio Gradle sync when querying Kotlin build script model on subprojects

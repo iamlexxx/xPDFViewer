@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.4] - 2026-11-01
+
+### Added
+- **Continuous Audio Reader (Document Audiobook Mode)**:
+  - Built offline hands-free audiobook reader with sentence coordinate synchronization (`ContinuousAudioReader.kt`, `AudioReaderModels.kt`, `AudioPlayerDock.kt`, `PdfAudioHighlightCanvas.kt`, `AudioSentenceSegmenterTest.kt`).
+  - **Sentence Segmentation & Audio Focus**:
+    - Chunks text streams into discrete sentences mapped to `SpatialWord` coordinate bounds.
+    - **Header & Footer Skipping Filter**: Automatically filters out running headers (top 8% margin `y <= 0.08f`), document footers, and page number stamps (bottom 8% margin `y >= 0.92f`), with live toggle chip ("Skip Margins" vs "Read All") in the dock.
+    - Manages audio focus (`AudioManager.OnAudioFocusChangeListener`) with automatic pause on external interruptions.
+  - **Synchronized Spotlight Overlay**:
+    - Paints warm amber spotlight (`Color(0xFFF59E0B)`) with rounded borders over words of the sentence being spoken in real-time.
+  - **Floating Playback Dock (`AudioPlayerDock.kt`)**:
+    - Glassmorphic floating controller with Play/Pause, sentence Skip Backward/Forward, and speed selector (`0.75×`–`2.0×`).
+    - Sleep timer options (15m, 30m, 45m, 60m, or End of Current Page).
+  - **Automated Viewport Tracking**:
+    - Smoothly scrolls viewport to keep active spoken lines centered, auto-advancing to subsequent pages upon completion.
+- **Bidirectional Image-PDF Conversion Studio (Standalone Offline Studio)**:
+  - Built dual-mode media & document conversion engine (`ImageToPdfEngine.kt`, `PdfToImageEngine.kt`, `ImagePdfModels.kt`, `ImagePdfConverterViewModel.kt`, `ImagePdfConverterScreen.kt`, `ImageExportSuccessDialog.kt`).
+  - **Images to PDF**:
+    - Multi-photo selection via Android Photo Picker (`PickMultipleVisualMedia`) with zero permissions.
+    - Interactive thumbnail strip with 90° rotation, item deletion, and page sequence reordering.
+    - Page presets: A4, US Letter, and Fit to Image (preserves original image dimensions without white borders).
+    - Page orientation (Auto, Portrait, Landscape), margin presets (None, Compact, Standard), and JPEG quality settings.
+  - **PDF to Images**:
+    - High-performance rasterization powered by native Android `PdfRenderer`.
+    - Multi-tier DPI presets: Standard (150 DPI), High Quality (300 DPI), and Ultra Archival (450 DPI).
+    - Formats: JPEG and lossless PNG.
+    - Streams rasterized pages into packaged ZIP archives via SAF `CreateDocument`.
+  - **Tools Hub Integration**:
+    - Added "Image & PDF Studio" card to `ToolsScreen.kt` under PDF Utilities with `Icons.Default.AddPhotoAlternate`.
+    - Integrated navigation via `ActiveToolScreen.IMAGE_CONVERTER` in `MainAppContainer.kt`.
+- **PDF Watermark & Dynamic Pagination Utility (Standalone Offline Studio)**:
+  - Built comprehensive, vector-stream watermarking and page numbering suite (`PdfWatermarkEngine.kt`, `WatermarkModels.kt`, `PdfWatermarkViewModel.kt`, `PdfWatermarkScreen.kt`, `WatermarkSuccessDialog.kt`, `PdfWatermarkEngineTest.kt`).
+  - **Vector Stream Stamping**:
+    - Direct PDFBox `PDPageContentStream` insertion with `PDExtendedGraphicsState` supporting calibrated alpha transparency (`0.10f`–`0.80f`).
+    - Diagonal (-45°), horizontal (0°), and vertical (90°) rotations centered mathematically on page geometries via transformation matrices (`Matrix`).
+    - Dual layer support: Foreground (over page content via `APPEND`) or Background (under existing text layer via `PREPEND`).
+  - **Dynamic Page Numbering & Bates Stamping**:
+    - Flexible formatting tokens: `"Page {page} of {total}"`, `"{page}"`, `"Page {page}"`, `"- {page} -"`, `"DOC-{bates}"`.
+    - 6-point anchor positioning matrix (Top Left/Center/Right, Bottom Left/Center/Right).
+    - Adjustable font size (8–18 pt), edge margin padding (12–48 pt), and color palettes.
+  - **Page Scoping Engine**:
+    - Scoping modes: All Pages, Skip Cover (First Page), or Custom Range syntax (`"1-3, 5, 8"`).
+  - **Tools Hub Integration**:
+    - Added "Watermark & Numbers" card to `ToolsScreen.kt` under PDF Utilities with `Icons.AutoMirrored.Filled.BrandingWatermark`.
+    - Integrated navigation via `ActiveToolScreen.WATERMARK_PDF` in `MainAppContainer.kt`.
+
 ## [1.3.3] - 2026-11-01
 
 ### Added

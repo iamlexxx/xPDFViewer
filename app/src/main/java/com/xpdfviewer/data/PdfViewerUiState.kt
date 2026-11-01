@@ -57,7 +57,8 @@ data class PdfViewerUiState(
     val searchState: PdfSearchState = PdfSearchState(),
     val readingMode: ReadingMode = ReadingMode.DEFAULT,
     val showReadingModeSheet: Boolean = false,
-    val formState: DocumentFormState = DocumentFormState()
+    val formState: DocumentFormState = DocumentFormState(),
+    val audioReaderState: AudioReaderUiState = AudioReaderUiState()
 ) {
     val isSpatialSelectionActive: Boolean
         get() = onScreenSelectPageIndex != null

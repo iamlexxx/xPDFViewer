@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "app/build.gradle.kts": {
-    "mtime": 1792326544.5600216,
-    "seen": 1793502367.800485,
-    "ast_hash": "4dcc75e90b3cc7d65caf36ac0aa4106f",
+    "mtime": 1793519457.4680946,
+    "seen": 1793519536.3551793,
+    "ast_hash": "cad450d86370c764a02be14fb295cf35",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/MainActivity.kt": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/data/PdfViewerUiState.kt": {
-    "mtime": 1793514378.0337172,
-    "seen": 1793515989.1468189,
-    "ast_hash": "6f14f910a712033f1def7b8cbad842f1",
+    "mtime": 1793521029.1399734,
+    "seen": 1793521903.3522093,
+    "ast_hash": "5d66be48f17b2f41a96400ef95c20c43",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/data/RecentDocument.kt": {
@@ -510,15 +510,15 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/PdfPageItem.kt": {
-    "mtime": 1793513895.6913092,
-    "seen": 1793514147.548347,
-    "ast_hash": "7ddf80a03b9b547f5cd6f07bf6bbcc7a",
+    "mtime": 1793520781.7999432,
+    "seen": 1793520996.3252888,
+    "ast_hash": "43e0dd7199218c694f67745986d1321d",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/PdfTopBar.kt": {
-    "mtime": 1793513933.881014,
-    "seen": 1793514147.548347,
-    "ast_hash": "ac7ef46a9243093e1a5c229dab0f59c1",
+    "mtime": 1793520803.8280807,
+    "seen": 1793520996.3252888,
+    "ast_hash": "07be68ae53cf029677854fd2ec1bce7b",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/SaveChoiceDialog.kt": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/screens/MainAppContainer.kt": {
-    "mtime": 1793516125.5220947,
-    "seen": 1793516607.4038548,
-    "ast_hash": "bb6d7808f1b44d9b7b1f3829ee0d6ccf",
+    "mtime": 1793520389.0721898,
+    "seen": 1793520996.3252888,
+    "ast_hash": "3998fe93baec1c0fc93cef2fd6f45241",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/screens/MergePdfScreen.kt": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/screens/PdfViewerScreen.kt": {
-    "mtime": 1793514379.1628666,
-    "seen": 1793515989.1468189,
-    "ast_hash": "2b9e00ed6c82d0a89fddf0dbe42134f5",
+    "mtime": 1793521823.6172495,
+    "seen": 1793521903.3522093,
+    "ast_hash": "bbca27ea54197946cd7bffbc0520b770",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/screens/RecentScreen.kt": {
@@ -624,9 +624,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/screens/ToolsScreen.kt": {
-    "mtime": 1793515738.4894645,
-    "seen": 1793515989.1468189,
-    "ast_hash": "f3c0c9849588c11fb13c462e31ba513c",
+    "mtime": 1793519688.2996776,
+    "seen": 1793519820.2359264,
+    "ast_hash": "dca001baef9aea1af428fa75a955b7d8",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/screens/WelcomeScreen.kt": {
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/PdfViewerViewModel.kt": {
-    "mtime": 1793516776.152514,
-    "seen": 1793517295.229926,
-    "ast_hash": "ca55fe5a9afd2a4b3c49950de99c9c4c",
+    "mtime": 1793521770.6042562,
+    "seen": 1793521903.3522093,
+    "ast_hash": "2fd7ad532c2a377c33b5728762459e0e",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/SignPdfViewModel.kt": {
@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1793515969.0718105,
-    "seen": 1793515989.1468189,
-    "ast_hash": "3757a1f13a7992efed001074234fc515",
+    "mtime": 1793521882.2192495,
+    "seen": 1793521903.3532062,
+    "ast_hash": "e91257d2c231df02284721e7f65319e9",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "FEATURES.md": {
-    "mtime": 1793515958.64329,
-    "seen": 1793515989.1468189,
-    "ast_hash": "5bb459c6e7892367c2e4514e39a76199",
+    "mtime": 1793521872.4653375,
+    "seen": 1793521903.3532062,
+    "ast_hash": "9d73a7fb395fb7d938dba22d46de6e98",
     "semantic_hash": ""
   },
   "GEMINI.md": {
@@ -1443,6 +1443,108 @@
     "mtime": 1793516125.7613232,
     "seen": 1793516607.4038548,
     "ast_hash": "5376d9c597a5a2101eddbba7428d8bf6",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/data/WatermarkModels.kt": {
+    "mtime": 1793519850.4228418,
+    "seen": 1793520996.3252888,
+    "ast_hash": "48ee732030e177233164c34d85d104ab",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/pdf/PdfWatermarkEngine.kt": {
+    "mtime": 1793519850.692946,
+    "seen": 1793520996.3252888,
+    "ast_hash": "b10622162c3d7e3aa48dd4d62786ba33",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/dialogs/WatermarkSuccessDialog.kt": {
+    "mtime": 1793520388.8230987,
+    "seen": 1793520996.3252888,
+    "ast_hash": "43336ff1c78cfdb35b55de10cf00036b",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/screens/PdfWatermarkScreen.kt": {
+    "mtime": 1793520389.3787394,
+    "seen": 1793520996.3252888,
+    "ast_hash": "7531191eb8b854cee611a3db61d48fc6",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/viewmodel/PdfWatermarkViewModel.kt": {
+    "mtime": 1793519852.533802,
+    "seen": 1793520996.3262908,
+    "ast_hash": "1700dc79ae785f95c29ca152d4d63de1",
+    "semantic_hash": ""
+  },
+  "app/src/test/java/com/xpdfviewer/pdf/PdfWatermarkEngineTest.kt": {
+    "mtime": 1793519852.6308014,
+    "seen": 1793520996.3262908,
+    "ast_hash": "e66d435910a5657f87eab67e9947ab16",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/data/ImagePdfModels.kt": {
+    "mtime": 1793519850.3454056,
+    "seen": 1793520996.3252888,
+    "ast_hash": "4685b48458a52568c91ac2a7be50c1f6",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/pdf/ImageToPdfEngine.kt": {
+    "mtime": 1793519850.5218349,
+    "seen": 1793520996.3252888,
+    "ast_hash": "d9e6d73894af69414db79eefc8e5b073",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/pdf/PdfToImageEngine.kt": {
+    "mtime": 1793519850.6271486,
+    "seen": 1793520996.3252888,
+    "ast_hash": "ac19c5b4a2440bcc624e927d575910fa",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/dialogs/ImageExportSuccessDialog.kt": {
+    "mtime": 1793520388.5866022,
+    "seen": 1793520996.3252888,
+    "ast_hash": "bb1016091a4795031bc199cf4ff25e1b",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/screens/ImagePdfConverterScreen.kt": {
+    "mtime": 1793520389.0211742,
+    "seen": 1793520996.3252888,
+    "ast_hash": "6860605626f244fa8dd7f4e59dc9b892",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/viewmodel/ImagePdfConverterViewModel.kt": {
+    "mtime": 1793519852.4157968,
+    "seen": 1793520996.3252888,
+    "ast_hash": "9bee786e6b2176f02aa51563107ab25e",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/data/AudioReaderModels.kt": {
+    "mtime": 1793521712.1334703,
+    "seen": 1793521903.3522093,
+    "ast_hash": "ce5c19d9bd507d49de7e4750a4f76105",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/speech/ContinuousAudioReader.kt": {
+    "mtime": 1793521758.1816351,
+    "seen": 1793521903.3522093,
+    "ast_hash": "f2238db44240adc7ea71564e83617232",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/components/AudioPlayerDock.kt": {
+    "mtime": 1793521813.984107,
+    "seen": 1793521903.3522093,
+    "ast_hash": "8b9570a26303053f7dfb999f430b3078",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/components/PdfAudioHighlightCanvas.kt": {
+    "mtime": 1793521019.6427658,
+    "seen": 1793521903.3522093,
+    "ast_hash": "a8df5915c689d88f534461e8e9a7f61b",
+    "semantic_hash": ""
+  },
+  "app/src/test/java/com/xpdfviewer/speech/AudioSentenceSegmenterTest.kt": {
+    "mtime": 1793521843.6206324,
+    "seen": 1793521903.3522093,
+    "ast_hash": "d018d2f44a0d0e8b2011c20a83979e12",
     "semantic_hash": ""
   }
 }

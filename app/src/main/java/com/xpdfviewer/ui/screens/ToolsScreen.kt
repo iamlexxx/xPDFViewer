@@ -21,7 +21,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.BrandingWatermark
 import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Draw
@@ -55,6 +57,8 @@ fun ToolsScreen(
     onOpenSecurity: () -> Unit = {},
     onOpenSplitPdf: () -> Unit = {},
     onOpenRedactPdf: () -> Unit = {},
+    onOpenWatermarkPdf: () -> Unit = {},
+    onOpenImageConverter: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -143,6 +147,24 @@ fun ToolsScreen(
                     description = "Permanently sanitize sensitive text, images, and metadata.",
                     icon = Icons.Default.Security,
                     onClick = onOpenRedactPdf
+                )
+            }
+
+            item {
+                ToolGridCard(
+                    title = "Watermark & Numbers",
+                    description = "Stamp confidential watermarks and dynamic page numbering.",
+                    icon = Icons.AutoMirrored.Filled.BrandingWatermark,
+                    onClick = onOpenWatermarkPdf
+                )
+            }
+
+            item {
+                ToolGridCard(
+                    title = "Image & PDF Studio",
+                    description = "Convert photos to PDF or export PDF pages as images.",
+                    icon = Icons.Default.AddPhotoAlternate,
+                    onClick = onOpenImageConverter
                 )
             }
 

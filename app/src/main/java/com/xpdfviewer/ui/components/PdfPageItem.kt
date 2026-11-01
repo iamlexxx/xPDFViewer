@@ -250,6 +250,14 @@ fun PdfPageItem(
                         )
                     }
                 }
+
+                // Continuous Audio Reader Sentence Highlight Overlay
+                if (uiState.audioReaderState.isActive && uiState.audioReaderState.currentPageIndex == pageIndex) {
+                    PdfAudioHighlightCanvas(
+                        wordBounds = uiState.audioReaderState.activeSentenceWordBounds,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(if (isLandscape) 4.dp else 10.dp))

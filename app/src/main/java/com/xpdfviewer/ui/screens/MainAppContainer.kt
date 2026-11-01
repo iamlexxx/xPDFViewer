@@ -91,7 +91,9 @@ enum class ActiveToolScreen {
     SIGN_PDF,
     SECURITY_TOOL,
     SPLIT_PDF,
-    REDACT_PDF
+    REDACT_PDF,
+    WATERMARK_PDF,
+    IMAGE_CONVERTER
 }
 
 @Composable
@@ -208,7 +210,9 @@ fun MainAppContainer(
                                     onOpenSignPdf = { activeToolScreen = ActiveToolScreen.SIGN_PDF },
                                     onOpenSecurity = { activeToolScreen = ActiveToolScreen.SECURITY_TOOL },
                                     onOpenSplitPdf = { activeToolScreen = ActiveToolScreen.SPLIT_PDF },
-                                    onOpenRedactPdf = { activeToolScreen = ActiveToolScreen.REDACT_PDF }
+                                    onOpenRedactPdf = { activeToolScreen = ActiveToolScreen.REDACT_PDF },
+                                    onOpenWatermarkPdf = { activeToolScreen = ActiveToolScreen.WATERMARK_PDF },
+                                    onOpenImageConverter = { activeToolScreen = ActiveToolScreen.IMAGE_CONVERTER }
                                 )
                             }
                         }
@@ -339,6 +343,24 @@ fun MainAppContainer(
                     }
                     ActiveToolScreen.REDACT_PDF -> {
                         PdfRedactionScreen(
+                            onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
+                            onOpenPdf = { uri ->
+                                activeToolScreen = ActiveToolScreen.NONE
+                                viewModel.loadPdf(context, uri)
+                            }
+                        )
+                    }
+                    ActiveToolScreen.WATERMARK_PDF -> {
+                        PdfWatermarkScreen(
+                            onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
+                            onOpenPdf = { uri ->
+                                activeToolScreen = ActiveToolScreen.NONE
+                                viewModel.loadPdf(context, uri)
+                            }
+                        )
+                    }
+                    ActiveToolScreen.IMAGE_CONVERTER -> {
+                        ImagePdfConverterScreen(
                             onNavigateBack = { activeToolScreen = ActiveToolScreen.NONE },
                             onOpenPdf = { uri ->
                                 activeToolScreen = ActiveToolScreen.NONE

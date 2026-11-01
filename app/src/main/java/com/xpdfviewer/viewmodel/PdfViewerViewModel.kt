@@ -17,6 +17,9 @@ import androidx.lifecycle.viewModelScope
 import com.xpdfviewer.data.AddBookmarkDialogState
 import com.xpdfviewer.data.AppTab
 import com.xpdfviewer.data.DocumentFormState
+import com.xpdfviewer.data.AudioPlaybackStatus
+import com.xpdfviewer.data.AudioReaderUiState
+import com.xpdfviewer.data.AudioSpeed
 import com.xpdfviewer.data.FormFieldItem
 import com.xpdfviewer.data.OutlineNode
 import com.xpdfviewer.data.OutlineTab
@@ -30,12 +33,14 @@ import com.xpdfviewer.data.RecentDocument
 import com.xpdfviewer.data.RecentDocumentsRepository
 import com.xpdfviewer.data.ReadingMode
 import com.xpdfviewer.data.SearchMatch
+import com.xpdfviewer.data.SleepTimerPreset
 import com.xpdfviewer.data.UserBookmark
 import com.xpdfviewer.pdf.PdfOutlineExtractor
 import com.xpdfviewer.pdf.PdfRendererCore
 import com.xpdfviewer.pdf.PdfSearchEngine
 import com.xpdfviewer.pdf.PdfTextExtractor
 import com.xpdfviewer.pdf.SpatialTextExtractor
+import com.xpdfviewer.speech.ContinuousAudioReader
 import com.xpdfviewer.speech.TextToSpeechManager
 import java.util.UUID
 import kotlinx.coroutines.Job
@@ -54,6 +59,7 @@ class PdfViewerViewModel : ViewModel() {
     private var pdfRenderer: PdfRendererCore? = null
     private var recentRepository: RecentDocumentsRepository? = null
     private var ttsManager: TextToSpeechManager? = null
+    private var continuousAudioReader: ContinuousAudioReader? = null
     private var searchJob: Job? = null
 
     fun initialize(context: Context) {
@@ -105,10 +111,12 @@ class PdfViewerViewModel : ViewModel() {
                 isOutlineLoading = false,
                 addBookmarkDialogState = AddBookmarkDialogState(),
                 searchState = PdfSearchState(),
-                formState = DocumentFormState()
+                formState = DocumentFormState(),
+                audioReaderState = AudioReaderUiState()
             )
         }
         stopSpeaking()
+        stopAudioReader()
         loadRecentDocuments()
     }
 
@@ -1161,6 +1169,154 @@ class PdfViewerViewModel : ViewModel() {
 
     // endregion
 
+    // region Continuous Audio Reader (Audiobook Mode)
+
+    private fun getOrCreateAudioReader(context: Context): ContinuousAudioReader {
+        return continuousAudioReader ?: ContinuousAudioReader(context.applicationContext, viewModelScope).also { reader ->
+            continuousAudioReader = reader
+            reader.onSentenceChanged = { pageIndex, sentence, totalSentences ->
+                _uiState.update { state ->
+                    state.copy(
+                        audioReaderState = state.audioReaderState.copy(
+                            currentPageIndex = pageIndex,
+                            currentSentenceIndex = sentence.index,
+                            currentSentenceText = sentence.text,
+                            activeSentenceWordBounds = sentence.wordBounds,
+                            totalSentencesOnPage = totalSentences
+                        )
+                    )
+                }
+            }
+            reader.onPlaybackStatusChanged = { status ->
+                _uiState.update { state ->
+                    state.copy(
+                        audioReaderState = state.audioReaderState.copy(status = status)
+                    )
+                }
+            }
+            reader.onPageCompleted = { completedPageIndex ->
+                val nextPageIndex = completedPageIndex + 1
+                if (nextPageIndex < _uiState.value.pageCount) {
+                    loadAndReadPage(context, nextPageIndex)
+                } else {
+                    stopAudioReader()
+                }
+            }
+            reader.onSleepTimerTick = { seconds ->
+                _uiState.update { state ->
+                    state.copy(
+                        audioReaderState = state.audioReaderState.copy(sleepTimerRemainingSeconds = seconds)
+                    )
+                }
+            }
+            reader.onSleepTimerExpired = {
+                stopAudioReader()
+            }
+        }
+    }
+
+    fun toggleAudioReader(context: Context) {
+        val currentState = _uiState.value.audioReaderState
+        if (currentState.isActive) {
+            stopAudioReader()
+        } else {
+            val startPage = (_uiState.value.currentPage - 1).coerceAtLeast(0)
+            _uiState.update {
+                it.copy(
+                    audioReaderState = AudioReaderUiState(
+                        isActive = true,
+                        currentPageIndex = startPage,
+                        status = AudioPlaybackStatus.BUFFERING
+                    )
+                )
+            }
+            loadAndReadPage(context, startPage)
+        }
+    }
+
+    private fun loadAndReadPage(context: Context, pageIndex: Int, startSentenceIndex: Int = 0) {
+        val docUri = _uiState.value.uri ?: return
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(
+                    currentPage = pageIndex + 1,
+                    audioReaderState = state.audioReaderState.copy(
+                        currentPageIndex = pageIndex,
+                        status = AudioPlaybackStatus.BUFFERING,
+                        activeSentenceWordBounds = emptyList()
+                    )
+                )
+            }
+
+            val spatialData = SpatialTextExtractor.extractSpatialText(context, docUri, pageIndex)
+            val reader = getOrCreateAudioReader(context)
+            val skipHeaders = _uiState.value.audioReaderState.skipHeaderFooter
+            val pageContent = reader.segmentIntoSentences(pageIndex, spatialData.words, skipHeaders)
+
+            reader.loadAndPlayPage(pageContent, startSentenceIndex)
+        }
+    }
+
+    fun toggleSkipHeaderFooter(context: Context) {
+        val newSkip = !_uiState.value.audioReaderState.skipHeaderFooter
+        _uiState.update { state ->
+            state.copy(
+                audioReaderState = state.audioReaderState.copy(skipHeaderFooter = newSkip)
+            )
+        }
+        continuousAudioReader?.skipHeaderFooter = newSkip
+        if (_uiState.value.audioReaderState.isActive) {
+            loadAndReadPage(context, _uiState.value.audioReaderState.currentPageIndex)
+        }
+    }
+
+    fun toggleAudioPlayPause(context: Context) {
+        val reader = getOrCreateAudioReader(context)
+        val status = _uiState.value.audioReaderState.status
+        if (status == AudioPlaybackStatus.PLAYING) {
+            reader.pause()
+        } else if (status == AudioPlaybackStatus.PAUSED) {
+            reader.resume()
+        } else {
+            loadAndReadPage(context, _uiState.value.audioReaderState.currentPageIndex)
+        }
+    }
+
+    fun skipAudioNext(context: Context) {
+        val reader = getOrCreateAudioReader(context)
+        reader.skipNext()
+    }
+
+    fun skipAudioPrevious(context: Context) {
+        val reader = getOrCreateAudioReader(context)
+        reader.skipPrevious()
+    }
+
+    fun setAudioSpeed(speed: AudioSpeed) {
+        continuousAudioReader?.setSpeed(speed)
+        _uiState.update { state ->
+            state.copy(audioReaderState = state.audioReaderState.copy(speed = speed))
+        }
+    }
+
+    fun setAudioSleepTimer(preset: SleepTimerPreset) {
+        continuousAudioReader?.setSleepTimer(preset)
+        _uiState.update { state ->
+            state.copy(audioReaderState = state.audioReaderState.copy(sleepTimer = preset))
+        }
+    }
+
+    fun stopAudioReader() {
+        continuousAudioReader?.stop()
+        _uiState.update { state ->
+            state.copy(
+                audioReaderState = AudioReaderUiState(isActive = false)
+            )
+        }
+    }
+
+    // endregion
+
     override fun onCleared() {
         super.onCleared()
         searchJob?.cancel()
@@ -1169,5 +1325,7 @@ class PdfViewerViewModel : ViewModel() {
         pdfRenderer = null
         ttsManager?.shutdown()
         ttsManager = null
+        continuousAudioReader?.release()
+        continuousAudioReader = null
     }
 }

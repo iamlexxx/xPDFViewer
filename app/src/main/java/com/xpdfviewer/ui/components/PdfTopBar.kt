@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Search
@@ -62,6 +63,8 @@ fun PdfTopBar(
     onOpenReadingMode: () -> Unit = {},
     hasAcroForm: Boolean = false,
     onOpenFormSheet: () -> Unit = {},
+    isAudioReaderActive: Boolean = false,
+    onToggleAudioReader: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
@@ -176,6 +179,15 @@ fun PdfTopBar(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+                    }
+
+                    // Audio reader / Audiobook mode toggle
+                    IconButton(onClick = onToggleAudioReader) {
+                        Icon(
+                            imageVector = Icons.Default.Headphones,
+                            contentDescription = "Audiobook Reader",
+                            tint = if (isAudioReaderActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
                     }
 
                     // Reading mode / Eye comfort action button

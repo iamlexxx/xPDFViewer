@@ -64,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.xpdfviewer.ui.components.AudioPlayerDock
 import com.xpdfviewer.ui.components.DeletePageDialog
 import com.xpdfviewer.ui.components.DocumentOutlineSheet
 import com.xpdfviewer.ui.components.ExtractPageDialog
@@ -385,7 +386,9 @@ fun PdfViewerScreen(
                             readingMode = uiState.readingMode,
                             onOpenReadingMode = { viewModel.openReadingModeSheet() },
                             hasAcroForm = uiState.formState.hasAcroForm,
-                            onOpenFormSheet = { viewModel.setFormSheetVisible(true) }
+                            onOpenFormSheet = { viewModel.setFormSheetVisible(true) },
+                            isAudioReaderActive = uiState.audioReaderState.isActive,
+                            onToggleAudioReader = { viewModel.toggleAudioReader(context) }
                         )
                     }
 
@@ -481,7 +484,38 @@ fun PdfViewerScreen(
                                     .padding(bottom = 16.dp)
                             )
                         }
+
+                        // Floating Continuous Audio Reader Dock
+                        if (uiState.audioReaderState.isActive && !isSelectionActive) {
+                            AudioPlayerDock(
+                                uiState = uiState.audioReaderState,
+                                totalPages = uiState.pageCount,
+                                onTogglePlayPause = { viewModel.toggleAudioPlayPause(context) },
+                                onSkipNext = { viewModel.skipAudioNext(context) },
+                                onSkipPrevious = { viewModel.skipAudioPrevious(context) },
+                                onSelectSpeed = { viewModel.setAudioSpeed(it) },
+                                onSelectSleepTimer = { viewModel.setAudioSleepTimer(it) },
+                                onToggleSkipHeaderFooter = { viewModel.toggleSkipHeaderFooter(context) },
+                                onClose = { viewModel.stopAudioReader() },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .navigationBarsPadding()
+                                    .padding(bottom = if (uiState.formState.hasAcroForm) 76.dp else 16.dp)
+                            )
+                        }
                     }
+                }
+            }
+        }
+
+        // Auto-scroll when Continuous Audio Reader advances page
+        LaunchedEffect(uiState.audioReaderState.currentPageIndex, uiState.audioReaderState.isActive) {
+            if (uiState.audioReaderState.isActive && uiState.pageCount > 0) {
+                val targetIdx = uiState.audioReaderState.currentPageIndex.coerceIn(0, uiState.pageCount - 1)
+                if (isLandscape) {
+                    pagerState.animateScrollToPage(targetIdx)
+                } else {
+                    listState.animateScrollToItem(targetIdx)
                 }
             }
         }

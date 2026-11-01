@@ -563,6 +563,9 @@ All file interactions (opening, creating copies, inserting documents) use Androi
 | **Split PDF Utility** | `SplitPdfScreen.kt`, `ToolsScreen.kt`, `SplitSuccessDialog.kt` | `SplitPdfViewModel.kt`, `PdfSplitterEngine.kt` | PdfBox-Android, Android SAF |
 | **Interactive Form Field Filler** | `PdfFormOverlayCanvas.kt`, `FormFieldsBottomSheet.kt`, `FormActionsBar.kt`, `EditFormFieldDialog.kt` | `PdfViewerViewModel.kt`, `PdfFormManager.kt` | PdfBox-Android `PDAcroForm` |
 | **Permanent PDF Redaction Tool** | `PdfRedactionScreen.kt`, `RedactionConfirmDialog.kt`, `RedactionSuccessDialog.kt`, `ToolsScreen.kt` | `PdfRedactionViewModel.kt`, `PdfRedactionEngine.kt`, `RedactionModels.kt` | PdfBox-Android Vector Content Stream, Native `PdfRenderer` |
+| **Watermark & Page Numbers** | `PdfWatermarkScreen.kt`, `WatermarkSuccessDialog.kt`, `ToolsScreen.kt` | `PdfWatermarkViewModel.kt`, `PdfWatermarkEngine.kt`, `WatermarkModels.kt` | PdfBox-Android Vector Content Stream, PDExtendedGraphicsState |
+| **Image & PDF Studio** | `ImagePdfConverterScreen.kt`, `ImageExportSuccessDialog.kt`, `ToolsScreen.kt` | `ImagePdfConverterViewModel.kt`, `ImageToPdfEngine.kt`, `PdfToImageEngine.kt` | PdfBox-Android, Native `PdfRenderer`, Android Photo Picker |
+| **Continuous Audio Reader** | `PdfViewerScreen.kt`, `AudioPlayerDock.kt`, `PdfAudioHighlightCanvas.kt` | `PdfViewerViewModel.kt`, `ContinuousAudioReader.kt`, `AudioReaderModels.kt` | Android `TextToSpeech`, `AudioManager` Audio Focus |
 | **File Provider** | `AndroidManifest.xml` | `res/xml/file_paths.xml` | AndroidX Core |
 
 ---
@@ -674,6 +677,103 @@ A dedicated offline redaction studio accessible from the **PDF Utilities** hub, 
 - `RedactionSuccessDialog.kt` (`com.xpdfviewer.ui.dialogs`)
 - `ToolsScreen.kt` (`com.xpdfviewer.ui.screens`)
 - `MainAppContainer.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 22. PDF Watermark & Dynamic Pagination Utility
+
+### Overview
+A dedicated offline watermarking and document pagination studio integrated into the **PDF Utilities** hub. Enables users to stamp legal and security notices (e.g. "CONFIDENTIAL", "DRAFT", "DO NOT COPY", custom text) and burn dynamic Bates numbering or page counters directly into PDF vector content streams.
+
+### Key Capabilities
+1. **Vector Content Stream Stamping (`PdfWatermarkEngine.kt`)**:
+   - Uses PDFBox `PDPageContentStream` with `PDExtendedGraphicsState` for calibrated alpha transparency (`0.10f`–`0.80f`).
+   - Supports diagonal (-45°), horizontal (0°), and vertical (90°) rotations centered on page geometry.
+   - Dual layer support: Foreground (over page content) or Background (under existing text layer via `PREPEND` mode).
+   - Dynamic text centering with mathematical transformation matrices (`Matrix`).
+2. **Dynamic Page Numbering & Bates Stamping**:
+   - Customizable formats: `"Page {page} of {total}"`, `"{page}"`, `"Page {page}"`, `"- {page} -"`, `"DOC-{bates}"`.
+   - 6-point anchor positioning matrix (Top Left/Center/Right, Bottom Left/Center/Right).
+   - Adjustable font size (8–18 pt) and border margin padding (12–48 pt).
+3. **Flexible Page Scoping**:
+   - All Pages, Skip Cover (First Page), or Custom Range expressions (`"1-3, 5, 8"`).
+4. **SAF Export & Viewer Launch**:
+   - Direct export via Storage Access Framework `CreateDocument` with `_watermarked.pdf` suffix.
+   - `WatermarkSuccessDialog.kt` with immediate 1-tap launch into the core viewer.
+
+### Key Files
+- `WatermarkModels.kt` (`com.xpdfviewer.data`)
+- `PdfWatermarkEngine.kt` (`com.xpdfviewer.pdf`)
+- `PdfWatermarkViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfWatermarkScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `WatermarkSuccessDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `ToolsScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `MainAppContainer.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 23. Bidirectional Image-PDF Conversion Studio
+
+### Overview
+A dual-mode offline conversion studio integrated into **PDF Utilities** that handles both compiling device gallery photos into standardized PDF documents and rasterizing PDF pages into high-resolution images packed into ZIP archives.
+
+### Operating Modes
+1. **Images to PDF (`ImageToPdfEngine.kt`)**:
+   - Ingestion via Android Photo Picker (`PickMultipleVisualMedia`) with zero runtime permissions.
+   - Draggable horizontal strip supporting 90° image rotation, deletion, and page order rearrangement.
+   - Page dimensions: A4, US Letter, and Fit to Image (preserves original photo dimensions without letterboxing).
+   - Layout options: Auto/Portrait/Landscape orientation, borderless or margin padding (18–36 pt), and adjustable JPEG compression quality.
+2. **PDF to Images (`PdfToImageEngine.kt`)**:
+   - High-fidelity rasterization powered by native Android `PdfRenderer`.
+   - Resolution presets: Standard (150 DPI), High Quality (300 DPI), and Ultra Archival (450 DPI).
+   - Formats: JPEG (compressed) and PNG (lossless transparent).
+   - Page scoping: All Pages, Skip Cover, or Custom Range syntax.
+   - Directly streams rasterized bitmaps into compressed ZIP archives via SAF `CreateDocument`.
+
+### Key Files
+- `ImagePdfModels.kt` (`com.xpdfviewer.data`)
+- `ImageToPdfEngine.kt` (`com.xpdfviewer.pdf`)
+- `PdfToImageEngine.kt` (`com.xpdfviewer.pdf`)
+- `ImagePdfConverterViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `ImagePdfConverterScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `ImageExportSuccessDialog.kt` (`com.xpdfviewer.ui.dialogs`)
+- `ToolsScreen.kt` (`com.xpdfviewer.ui.screens`)
+- `MainAppContainer.kt` (`com.xpdfviewer.ui.screens`)
+
+---
+
+## 24. Continuous Audio Reader (Document Audiobook Mode)
+
+### Overview
+Transforms the core PDF reading experience into an offline, continuous document audiobook reader with synchronized on-page sentence spotlighting and automated viewport page progression.
+
+### Key Capabilities
+1. **Continuous Speech Orchestration (`ContinuousAudioReader.kt`)**:
+   - Chunks page text into sentences mapped directly to `SpatialWord` coordinate bounding boxes.
+   - Sequential paragraph and sentence advancement with `UtteranceProgressListener`.
+   - **Header & Footer Margin Skipping**: Automatically detects and prunes running header text (top 8% margin `y <= 0.08f`), footer notices, and standalone page numbers (bottom 8% margin `y >= 0.92f`), preventing intrusive repetition during continuous listening.
+   - Audio focus management (`AudioManager.requestAudioFocus`) automatically pausing speech on calls or interruptions.
+2. **Floating Playback Dock (`AudioPlayerDock.kt`)**:
+   - Sleek Material 3 floating pill pinned above bottom navigation in `PdfViewerScreen.kt`.
+   - Play / Pause controls with buffering spinner, Skip Previous / Next sentence buttons.
+   - Dynamic speech rate stepper (`0.75×`, `1.0×`, `1.25×`, `1.5×`, `1.75×`, `2.0×`).
+   - Sleep timer options: 15m, 30m, 45m, 60m, or End of Current Page.
+3. **Synchronized Spatial Highlighting (`PdfAudioHighlightCanvas.kt`)**:
+   - Real-time warm amber spotlight (`Color(0xFFF59E0B)`) with rounded corners tracking the sentence currently being spoken across lines.
+4. **Automated Viewport Tracking**:
+   - Viewport automatically animates scrolling to keep the active spoken sentence centered.
+   - Seamlessly turns to the next page when the current page's text stream finishes.
+
+### Key Files
+- `AudioReaderModels.kt` (`com.xpdfviewer.data`)
+- `ContinuousAudioReader.kt` (`com.xpdfviewer.speech`)
+- `AudioSentenceSegmenterTest.kt` (`com.xpdfviewer.speech`)
+- `PdfAudioHighlightCanvas.kt` (`com.xpdfviewer.ui.components`)
+- `AudioPlayerDock.kt` (`com.xpdfviewer.ui.components`)
+- `PdfTopBar.kt` (`com.xpdfviewer.ui.components`)
+- `PdfPageItem.kt` (`com.xpdfviewer.ui.components`)
+- `PdfViewerViewModel.kt` (`com.xpdfviewer.viewmodel`)
+- `PdfViewerScreen.kt` (`com.xpdfviewer.ui.screens`)
 
 ---
 
