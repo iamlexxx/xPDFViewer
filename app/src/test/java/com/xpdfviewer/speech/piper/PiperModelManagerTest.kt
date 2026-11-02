@@ -85,4 +85,17 @@ class PiperModelManagerTest {
         assertTrue(targetSafe.canonicalPath.startsWith(baseDir.canonicalPath))
         assertFalse(targetMalicious.canonicalPath.startsWith(baseDir.canonicalPath))
     }
+
+    @Test
+    fun testSha256ChecksumComputation() {
+        val tempFile = File.createTempFile("sha256_test", ".txt")
+        try {
+            tempFile.writeText("hello world")
+            val hash = PiperModelManager.computeSha256(tempFile)
+            // SHA-256 for "hello world"
+            assertEquals("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9", hash)
+        } finally {
+            tempFile.delete()
+        }
+    }
 }

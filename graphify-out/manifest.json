@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "app/build.gradle.kts": {
-    "mtime": 1793539006.7903314,
-    "seen": 1793539343.029078,
-    "ast_hash": "9fe857aeac0d44507bacc3b5ca204710",
+    "mtime": 1793618500.470786,
+    "seen": 1793618548.292428,
+    "ast_hash": "fa92ebcebe480df4a6ca5938ace8b54f",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/MainActivity.kt": {
@@ -672,8 +672,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/PdfViewerViewModel.kt": {
-    "mtime": 1793617430.227987,
-    "seen": 1793617541.6892016,
+    "mtime": 1793617576.3448765,
+    "seen": 1793617925.9774795,
     "ast_hash": "22b7523461d4ee40e69d0b8220915ae0",
     "semantic_hash": ""
   },
@@ -1416,9 +1416,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/pdf/PdfRedactionEngine.kt": {
-    "mtime": 1793516125.1734624,
-    "seen": 1793516607.4028556,
-    "ast_hash": "f36518ebfec616d823a4a1ff26df2dda",
+    "mtime": 1793618500.9759004,
+    "seen": 1793618548.292428,
+    "ast_hash": "c1032f37951c7723a3e67d7121eaf6e0",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/dialogs/RedactionConfirmDialog.kt": {
@@ -1548,8 +1548,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/service/AudioPlaybackService.kt": {
-    "mtime": 1793617449.1106143,
-    "seen": 1793617541.6881962,
+    "mtime": 1793617576.0806928,
+    "seen": 1793617925.9774795,
     "ast_hash": "2120207b3c8f5c12f67346aa9dd27987",
     "semantic_hash": ""
   },
@@ -1602,27 +1602,27 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/AudioTrackPcmPlayer.kt": {
-    "mtime": 1793617366.6375332,
-    "seen": 1793617541.6881962,
+    "mtime": 1793617576.1547318,
+    "seen": 1793617925.9774795,
     "ast_hash": "2e9211135bdd344bea821e8e4f599856",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/PiperModelManager.kt": {
-    "mtime": 1793542761.585204,
-    "seen": 1793542896.1779275,
-    "ast_hash": "9f5cac52ac585bf1a531b4a781486670",
+    "mtime": 1793618501.1216748,
+    "seen": 1793618548.292428,
+    "ast_hash": "3a1e2be2ccfa1b3143382d0a7f0d0bef",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/PiperOnnxSynthesizer.kt": {
-    "mtime": 1793617414.1495893,
-    "seen": 1793617541.6881962,
+    "mtime": 1793617576.2428381,
+    "seen": 1793617925.9774795,
     "ast_hash": "0959e5b13a9424eb88a1b31afb0553c8",
     "semantic_hash": ""
   },
   "app/src/test/java/com/xpdfviewer/speech/piper/PiperModelManagerTest.kt": {
-    "mtime": 1793542780.7263367,
-    "seen": 1793542896.1779275,
-    "ast_hash": "f4e602643e3fea9f37b8ba3bf5e600f0",
+    "mtime": 1793618359.7418861,
+    "seen": 1793618548.292428,
+    "ast_hash": "d1a2855f69a23b012d7ac32eab30a80a",
     "semantic_hash": ""
   },
   ".agents/skills/security-audit/report-schema.json": {

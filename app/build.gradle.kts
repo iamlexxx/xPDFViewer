@@ -24,19 +24,24 @@ android {
         }
     }
 
+    val keystoreFile = System.getenv("KEYSTORE_FILE")
     signingConfigs {
-        create("release") {
-            storeFile = file(System.getenv("KEYSTORE_FILE") ?: "release.keystore")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "xpdfviewer_release_pass"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "xpdfviewer"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "xpdfviewer_release_pass"
+        if (!keystoreFile.isNullOrBlank()) {
+            create("release") {
+                storeFile = file(keystoreFile)
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (!keystoreFile.isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

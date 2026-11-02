@@ -36,7 +36,8 @@ data class PiperVoiceModel(
     val modelFileName: String,
     val tokensFileName: String = "tokens.txt",
     val downloadUrl: String,
-    val approxBytes: Long = 67_220_000L
+    val approxBytes: Long = 67_220_000L,
+    val expectedSha256: String? = null
 )
 
 data class PiperModelPaths(
@@ -267,6 +268,14 @@ object PiperModelManager {
                     }
                 }
 
+                // Cryptographic integrity check (SHA-256)
+                if (voice.expectedSha256 != null) {
+                    val actualHash = computeSha256(tempArchive)
+                    if (!actualHash.equals(voice.expectedSha256, ignoreCase = true)) {
+                        throw SecurityException("Integrity check failed for ${voice.id}: expected ${voice.expectedSha256}, got $actualHash")
+                    }
+                }
+
                 updateStatus(voice.id, PiperDownloadStatus.Extracting)
 
                 // Unpack tar.bz2 directly into context.filesDir/piper/
@@ -350,5 +359,17 @@ object PiperModelManager {
         if (voiceId == DEFAULT_VOICE.id || _legacyDownloadStatus.value !is PiperDownloadStatus.Ready) {
             _legacyDownloadStatus.value = status
         }
+    }
+
+    fun computeSha256(file: File): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer = ByteArray(32 * 1024)
+            var bytesRead: Int
+            while (input.read(buffer).also { bytesRead = it } != -1) {
+                digest.update(buffer, 0, bytesRead)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 }
