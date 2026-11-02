@@ -25,6 +25,8 @@ class AudioTrackPcmPlayer(
     }
 
     private var audioTrack: AudioTrack? = null
+    private var currentSampleRate: Int = 0
+    private val trackLock = Any()
     private var playbackJob: Job? = null
     private val isPlayingState = AtomicBoolean(false)
     private val isPausedState = AtomicBoolean(false)
@@ -61,39 +63,7 @@ class AudioTrackPcmPlayer(
                 }
                 // Trailing padding remains 0 (silence)
 
-                val minBufferSize = AudioTrack.getMinBufferSize(
-                    sampleRate,
-                    AudioFormat.CHANNEL_OUT_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT
-                )
-                // 500ms hardware buffer headroom (22050 samples = 44100 bytes)
-                val bufferSizeInBytes = maxOf(minBufferSize * 2, sampleRate)
-
-                val attributes = AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-
-                val format = AudioFormat.Builder()
-                    .setSampleRate(sampleRate)
-                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .build()
-
-                val track = AudioTrack.Builder()
-                    .setAudioAttributes(attributes)
-                    .setAudioFormat(format)
-                    .setBufferSizeInBytes(bufferSizeInBytes)
-                    .setTransferMode(AudioTrack.MODE_STREAM)
-                    .apply {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
-                        }
-                    }
-                    .build()
-
-                audioTrack = track
-                track.play()
+                val track = getOrCreateTrack(sampleRate)
                 isPlayingState.set(true)
                 isPausedState.set(false)
 
@@ -183,9 +153,71 @@ class AudioTrackPcmPlayer(
                 }
             } finally {
                 progressJob?.cancel()
-                cleanupTrack()
+                synchronized(trackLock) {
+                    try {
+                        if (audioTrack?.playState == AudioTrack.PLAYSTATE_PLAYING) {
+                            audioTrack?.pause()
+                        }
+                        audioTrack?.flush()
+                    } catch (_: Exception) {}
+                }
             }
         }
+    }
+
+    private fun getOrCreateTrack(sampleRate: Int): AudioTrack = synchronized(trackLock) {
+        val existing = audioTrack
+        if (existing != null && currentSampleRate == sampleRate && existing.state == AudioTrack.STATE_INITIALIZED) {
+            try {
+                if (existing.playState == AudioTrack.PLAYSTATE_PLAYING) {
+                    existing.pause()
+                }
+                existing.flush()
+                existing.play()
+                return existing
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to reuse AudioTrack, rebuilding", e)
+                cleanupTrackLocked()
+            }
+        } else {
+            cleanupTrackLocked()
+        }
+
+        val minBufferSize = AudioTrack.getMinBufferSize(
+            sampleRate,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+        )
+        // 500ms hardware buffer headroom (22050 samples = 44100 bytes)
+        val bufferSizeInBytes = maxOf(minBufferSize * 2, sampleRate)
+
+        val attributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build()
+
+        val format = AudioFormat.Builder()
+            .setSampleRate(sampleRate)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+            .build()
+
+        val track = AudioTrack.Builder()
+            .setAudioAttributes(attributes)
+            .setAudioFormat(format)
+            .setBufferSizeInBytes(bufferSizeInBytes)
+            .setTransferMode(AudioTrack.MODE_STREAM)
+            .apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                }
+            }
+            .build()
+
+        track.play()
+        audioTrack = track
+        currentSampleRate = sampleRate
+        track
     }
 
     fun pause() {
@@ -211,10 +243,19 @@ class AudioTrackPcmPlayer(
         isPausedState.set(false)
         playbackJob?.cancel()
         playbackJob = null
-        cleanupTrack()
+        synchronized(trackLock) {
+            try {
+                audioTrack?.let { track ->
+                    if (track.playState == AudioTrack.PLAYSTATE_PLAYING) {
+                        track.pause()
+                    }
+                    track.flush()
+                }
+            } catch (_: Exception) {}
+        }
     }
 
-    private fun cleanupTrack() {
+    private fun cleanupTrackLocked() {
         try {
             audioTrack?.let { track ->
                 if (track.playState == AudioTrack.PLAYSTATE_PLAYING) {
@@ -224,10 +265,16 @@ class AudioTrackPcmPlayer(
             }
         } catch (_: Exception) {}
         audioTrack = null
+        currentSampleRate = 0
+    }
+
+    private fun cleanupTrack() = synchronized(trackLock) {
+        cleanupTrackLocked()
     }
 
     fun release() {
         stop()
+        cleanupTrack()
     }
 }
 

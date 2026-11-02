@@ -1239,17 +1239,18 @@ class PdfViewerViewModel : ViewModel() {
     // region Continuous Audio Reader (Audiobook Mode)
 
     private fun getOrCreateAudioReader(context: Context): ContinuousAudioReader {
-        return continuousAudioReader ?: ContinuousAudioReader(context.applicationContext, viewModelScope).also { reader ->
+        val appContext = context.applicationContext
+        return continuousAudioReader ?: ContinuousAudioReader(appContext, viewModelScope).also { reader ->
             continuousAudioReader = reader
             reader.setPitch(_uiState.value.audioReaderState.pitch)
             _uiState.value.audioReaderState.selectedVoiceId?.let { reader.setVoice(it) }
 
             // Wire Service Commander for system notifications & lock screen controls
             AudioPlaybackService.commander = object : AudioPlaybackService.AudioPlaybackCommander {
-                override fun onTogglePlayPause() { toggleAudioPlayPause(context) }
-                override fun onSkipNext() { skipAudioNext(context) }
-                override fun onSkipPrevious() { skipAudioPrevious(context) }
-                override fun onStop() { stopAudioReader(context) }
+                override fun onTogglePlayPause() { toggleAudioPlayPause(appContext) }
+                override fun onSkipNext() { skipAudioNext(appContext) }
+                override fun onSkipPrevious() { skipAudioPrevious(appContext) }
+                override fun onStop() { stopAudioReader(appContext) }
             }
 
             reader.onSentenceChanged = { pageIndex, sentence, totalSentences ->

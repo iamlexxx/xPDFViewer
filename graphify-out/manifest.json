@@ -516,8 +516,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/PdfTopBar.kt": {
-    "mtime": 1793544226.7315843,
-    "seen": 1793544287.0434806,
+    "mtime": 1793544366.8172114,
+    "seen": 1793544717.9524474,
     "ast_hash": "6b4d265c30b1fcdb20c82ecfa4f90ce8",
     "semantic_hash": ""
   },
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/PdfViewerViewModel.kt": {
-    "mtime": 1793541982.0200672,
-    "seen": 1793542896.1779275,
-    "ast_hash": "ea1e5e97516395846a594863849b9248",
+    "mtime": 1793617430.227987,
+    "seen": 1793617541.6892016,
+    "ast_hash": "22b7523461d4ee40e69d0b8220915ae0",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/viewmodel/SignPdfViewModel.kt": {
@@ -1176,8 +1176,8 @@
     "semantic_hash": ""
   },
   "FEATURES.md": {
-    "mtime": 1793544242.2853339,
-    "seen": 1793544287.0434806,
+    "mtime": 1793544366.522104,
+    "seen": 1793544717.9524474,
     "ast_hash": "80308db8a5666bb90971baaff45c334c",
     "semantic_hash": ""
   },
@@ -1530,8 +1530,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/AudioPlayerDock.kt": {
-    "mtime": 1793544218.9279592,
-    "seen": 1793544287.0418172,
+    "mtime": 1793544366.6532123,
+    "seen": 1793544717.9524474,
     "ast_hash": "d7743d54fc2ebade2ac2b578d55b813f",
     "semantic_hash": ""
   },
@@ -1548,9 +1548,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/service/AudioPlaybackService.kt": {
-    "mtime": 1793530545.969265,
-    "seen": 1793531388.4191344,
-    "ast_hash": "da2c404d794e0a73fbf909617964fd5a",
+    "mtime": 1793617449.1106143,
+    "seen": 1793617541.6881962,
+    "ast_hash": "2120207b3c8f5c12f67346aa9dd27987",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/AudioTextNormalizer.kt": {
@@ -1578,8 +1578,8 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/FloatingViewerNavigationMenu.kt": {
-    "mtime": 1793544204.457047,
-    "seen": 1793544287.0434806,
+    "mtime": 1793544366.7532146,
+    "seen": 1793544717.9524474,
     "ast_hash": "590d4bb59c593701d8bdade41ac37a4b",
     "semantic_hash": ""
   },
@@ -1602,9 +1602,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/AudioTrackPcmPlayer.kt": {
-    "mtime": 1793540293.7602215,
-    "seen": 1793541877.5942855,
-    "ast_hash": "fd07d7f6e283508bcba5ead5fb6a95bf",
+    "mtime": 1793617366.6375332,
+    "seen": 1793617541.6881962,
+    "ast_hash": "2e9211135bdd344bea821e8e4f599856",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/PiperModelManager.kt": {
@@ -1614,15 +1614,141 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/speech/piper/PiperOnnxSynthesizer.kt": {
-    "mtime": 1793543490.0626361,
-    "seen": 1793543766.9494922,
-    "ast_hash": "5bdb8a14fa486417fc86f95bcb467437",
+    "mtime": 1793617414.1495893,
+    "seen": 1793617541.6881962,
+    "ast_hash": "0959e5b13a9424eb88a1b31afb0553c8",
     "semantic_hash": ""
   },
   "app/src/test/java/com/xpdfviewer/speech/piper/PiperModelManagerTest.kt": {
     "mtime": 1793542780.7263367,
     "seen": 1793542896.1779275,
     "ast_hash": "f4e602643e3fea9f37b8ba3bf5e600f0",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/report-schema.json": {
+    "mtime": 1793617224.591884,
+    "seen": 1793617541.6881962,
+    "ast_hash": "e705ada366ad4025f55f943c95d9f590",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/validate-coverage-ledger.cjs": {
+    "mtime": 1793617224.592918,
+    "seen": 1793617541.6881962,
+    "ast_hash": "5a66be64317f177ecef5d150b1abf1d9",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/validate-coverage-ledger.test.cjs": {
+    "mtime": 1793617224.5938804,
+    "seen": 1793617541.6881962,
+    "ast_hash": "3bc35b09cbd0d46c65457de04cef10a3",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/validate-findings.cjs": {
+    "mtime": 1793617224.5948925,
+    "seen": 1793617541.6881962,
+    "ast_hash": "b924a4aca31ed6095f6c1603b97a552c",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/validate-findings.test.cjs": {
+    "mtime": 1793617224.5958805,
+    "seen": 1793617541.6881962,
+    "ast_hash": "135077736a6939252acbff7ca706c32a",
+    "semantic_hash": ""
+  },
+  "skills-lock.json": {
+    "mtime": 1793617229.3449953,
+    "seen": 1793617541.6892016,
+    "ast_hash": "1b2513c2e2bf8015ba4b1debcf34a39e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/AI-AND-LLM.md": {
+    "mtime": 1793617224.5832772,
+    "seen": 1793617541.6892016,
+    "ast_hash": "c5abfaece0f58d5d5058fa07b29791ad",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/ATTACK-CLASSES.md": {
+    "mtime": 1793617224.5842767,
+    "seen": 1793617541.6892016,
+    "ast_hash": "b33b760ff50ffdc0eda5d928f80fb107",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/CLIENT-SIDE.md": {
+    "mtime": 1793617224.5848746,
+    "seen": 1793617541.6892016,
+    "ast_hash": "f535193f9c655e348e5b904f7f67d34e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/CLOUD-AND-DEPLOYMENT.md": {
+    "mtime": 1793617224.5848746,
+    "seen": 1793617541.6892016,
+    "ast_hash": "3396934a06bfa86a84596e661f875300",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/DATA-ISOLATION-AND-LIFECYCLE.md": {
+    "mtime": 1793617224.585919,
+    "seen": 1793617541.6892016,
+    "ast_hash": "33d0561cb12415d388a6449d90d2ff3f",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/DESKTOP-MOBILE-AND-LOCAL-IPC.md": {
+    "mtime": 1793617224.585919,
+    "seen": 1793617541.6892016,
+    "ast_hash": "f0d96ab77876c447d64ba1cef6f3da5e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/HUNTING.md": {
+    "mtime": 1793617224.5869198,
+    "seen": 1793617541.6892016,
+    "ast_hash": "5cb64bcc2971ceb4a7f955ffd741d25f",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/MEMORY-SAFETY-AND-BINARY.md": {
+    "mtime": 1793617224.5869198,
+    "seen": 1793617541.6892016,
+    "ast_hash": "8d3d5783e9710a299c2c1cbef8ca7463",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/PROTOCOLS-RPC-AND-MESSAGING.md": {
+    "mtime": 1793617224.5878825,
+    "seen": 1793617541.6892016,
+    "ast_hash": "5137eb203d4b236a081210bb77b21131",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/RECONNAISSANCE.md": {
+    "mtime": 1793617224.5878825,
+    "seen": 1793617541.6892016,
+    "ast_hash": "95ea170b99be883a9f704bfee29b9443",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/RESOURCE-EXHAUSTION-AND-AVAILABILITY.md": {
+    "mtime": 1793617224.5888786,
+    "seen": 1793617541.6892016,
+    "ast_hash": "92a3e104467a5fc71a6ba34bf97828ef",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/SKILL.md": {
+    "mtime": 1793617224.5899012,
+    "seen": 1793617541.6892016,
+    "ast_hash": "cec212c92a709bfffce1cbb1daca0df1",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/SUPPLY-CHAIN-AND-RELEASE.md": {
+    "mtime": 1793617224.5899012,
+    "seen": 1793617541.6892016,
+    "ast_hash": "ea6e73711ef3d3acc1201633a172d4b0",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/VALIDATION-AND-REPORTING.md": {
+    "mtime": 1793617224.590886,
+    "seen": 1793617541.6892016,
+    "ast_hash": "df9bbf7f5058f0f7eaba098b4ce830a2",
+    "semantic_hash": ""
+  },
+  ".agents/skills/security-audit/WEB-PROTOCOL-AND-AUTH.md": {
+    "mtime": 1793617224.591884,
+    "seen": 1793617541.6892016,
+    "ast_hash": "53943d99f2a3484ce8f37de2be783f8b",
     "semantic_hash": ""
   }
 }

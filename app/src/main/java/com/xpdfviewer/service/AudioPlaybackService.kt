@@ -96,19 +96,19 @@ class AudioPlaybackService : Service() {
         mediaSession = MediaSession(this, "xPDF_Audiobook_Session").apply {
             setCallback(object : MediaSession.Callback() {
                 override fun onPlay() {
-                    commander?.onTogglePlayPause()
+                    commander?.onTogglePlayPause() ?: stopForegroundService()
                 }
 
                 override fun onPause() {
-                    commander?.onTogglePlayPause()
+                    commander?.onTogglePlayPause() ?: stopForegroundService()
                 }
 
                 override fun onSkipToNext() {
-                    commander?.onSkipNext()
+                    commander?.onSkipNext() ?: stopForegroundService()
                 }
 
                 override fun onSkipToPrevious() {
-                    commander?.onSkipPrevious()
+                    commander?.onSkipPrevious() ?: stopForegroundService()
                 }
 
                 override fun onStop() {
@@ -140,13 +140,28 @@ class AudioPlaybackService : Service() {
                 }
             }
             ACTION_PLAY_PAUSE -> {
-                commander?.onTogglePlayPause()
+                val cmd = commander
+                if (cmd != null) {
+                    cmd.onTogglePlayPause()
+                } else {
+                    stopForegroundService()
+                }
             }
             ACTION_SKIP_NEXT -> {
-                commander?.onSkipNext()
+                val cmd = commander
+                if (cmd != null) {
+                    cmd.onSkipNext()
+                } else {
+                    stopForegroundService()
+                }
             }
             ACTION_SKIP_PREV -> {
-                commander?.onSkipPrevious()
+                val cmd = commander
+                if (cmd != null) {
+                    cmd.onSkipPrevious()
+                } else {
+                    stopForegroundService()
+                }
             }
             ACTION_USER_STOP -> {
                 commander?.onStop()
