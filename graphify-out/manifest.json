@@ -354,8 +354,8 @@
     "semantic_hash": ""
   },
   "app/build.gradle.kts": {
-    "mtime": 1793619333.6608577,
-    "seen": 1793619716.56657,
+    "mtime": 1793619800.998604,
+    "seen": 1793619837.749396,
     "ast_hash": "662eb322b3d0ded162909ded41a707df",
     "semantic_hash": ""
   },
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/AppNavigationDrawer.kt": {
-    "mtime": 1793619656.382422,
-    "seen": 1793619716.56657,
-    "ast_hash": "5702cf6e801bb7e6fb5013c441ccdbf4",
+    "mtime": 1793620829.0694356,
+    "seen": 1793620925.2884052,
+    "ast_hash": "f25e171369ffbd30c4f5fe5dc8b3c2c1",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/ui/components/CreatePdfSpeedDial.kt": {
@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1793619545.6362562,
-    "seen": 1793619716.56657,
-    "ast_hash": "7788b81ce0e3e41f2a41f7514794bd90",
+    "mtime": 1793621402.4088914,
+    "seen": 1793621431.5206225,
+    "ast_hash": "dd8f778a9cba244355f6ed5dc06b29ac",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793619532.0464425,
-    "seen": 1793619716.56657,
-    "ast_hash": "e01ad9cbe6534dc94f81cbbff7d9970c",
+    "mtime": 1793621392.1142642,
+    "seen": 1793621431.5206225,
+    "ast_hash": "90db17162e20463f4cd225c621337a30",
     "semantic_hash": ""
   },
   "app/src/main/java/com/xpdfviewer/data/PageOrganizerUiState.kt": {
@@ -1743,6 +1743,12 @@
     "mtime": 1793617224.591884,
     "seen": 1793617541.6892016,
     "ast_hash": "53943d99f2a3484ce8f37de2be783f8b",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/xpdfviewer/ui/dialogs/OpenSourceCreditsDialog.kt": {
+    "mtime": 1793620953.8212135,
+    "seen": 1793621431.5196242,
+    "ast_hash": "79b84e357845a00c6018df9ff5c7e305",
     "semantic_hash": ""
   }
 }

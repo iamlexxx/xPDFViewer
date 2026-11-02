@@ -5,7 +5,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%2F%20Material%203-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![ML Kit](https://img.shields.io/badge/AI%2FML-Google%20ML%20Kit-FF6F00?logo=google&logoColor=white)](https://developers.google.com/ml-kit)
 [![Offline Privacy](https://img.shields.io/badge/Privacy-100%25%20On--Device%20%26%20Offline-success)](README.md)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **xPDF Viewer** is a modern, high-performance, edge-to-edge Android PDF reader and offline document utility suite. Built entirely with Jetpack Compose, Material 3, PdfBox-Android, CameraX, and Google ML Kit, it provides viewing, editing, signing, scanning, merging, and compression tools—without internet access, third-party analytics, or cloud uploads.
 
@@ -170,5 +170,5 @@ Developed and maintained by **Lex**:
 
 ## License
 
-Distributed under the Apache License, Version 2.0. See `LICENSE` for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
 

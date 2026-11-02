@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Memory
@@ -40,6 +41,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.xpdfviewer.ui.dialogs.OpenSourceCreditsDialog
 
 @Composable
 fun AppDrawerContent(
@@ -57,6 +63,7 @@ fun AppDrawerContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var showCreditsDialog by remember { mutableStateOf(false) }
     ModalDrawerSheet(
         drawerContainerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier
@@ -299,6 +306,49 @@ fun AppDrawerContent(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            showCreditsDialog = true
+                        }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Open Source Credits",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "View Open Source Credits",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
 
             // Footer
@@ -321,6 +371,12 @@ fun AppDrawerContent(
                 )
             }
         }
+    }
+
+    if (showCreditsDialog) {
+        OpenSourceCreditsDialog(
+            onDismiss = { showCreditsDialog = false }
+        )
     }
 }
 

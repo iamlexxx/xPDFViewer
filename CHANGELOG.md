@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Developer & Project Metadata**:
   - Added "DEVELOPER & PROJECT" section in navigation drawer with author profile (`Lex`) and direct GitHub repository launcher (`https://github.com/iamlexxx/xPDFViewer`).
+  - Added in-app **Open Source Credits** dialog (`OpenSourceCreditsDialog.kt`) attributing all 8 open source GitHub dependencies with license badges and repository links.
+  - Aligned project documentation and badges to MIT License (`LICENSE`).
   - Updated drawer version indicator to `v1.4.0 (Build 3)`.
   - Added maintainer attribution and repository details across project documentation.
 - **Offline Piper ONNX Neural Voice Studio**:
