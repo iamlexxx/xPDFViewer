@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-11-02
+
+### Added
+- **Developer & Project Metadata**:
+  - Added "DEVELOPER & PROJECT" section in navigation drawer with author profile (`Lex`) and direct GitHub repository launcher (`https://github.com/iamlexxx/xPDFViewer`).
+  - Updated drawer version indicator to `v1.4.0 (Build 3)`.
+  - Added maintainer attribution and repository details across project documentation.
+- **Offline Piper ONNX Neural Voice Studio**:
+  - On-device multi-accent neural text-to-speech synthesis engine using ONNX Runtime.
+  - Interactive multi-narrator selector and voice speed/pitch controls.
+
+### Security & Hardening
+- **True PDF Redaction Engine**:
+  - Replaced superficial visual overlay rectangles with real content removal stripping underlying PDF text characters and vector glyphs within target bounds before raster burn-in.
+- **Scoped FileProvider Pathing**:
+  - Restricted exposed file provider paths exclusively to isolated cache directories (`/cache/shared_docs`), removing root internal storage exposure.
+- **Data Protection & Backup**:
+  - Explicitly disabled Android cloud/device backup (`android:allowBackup="false"`) to protect sensitive viewed and signed documents.
+
+---
+
 ## [1.3.4] - 2026-11-01
 
 ### Added
